@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慧报空间 - 数据库字典</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#333;display:flex;flex-direction:column;height:100vh}
+/* Header */
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.header h1{font-size:20px;font-weight:600}
+.header .sub{font-size:13px;color:rgba(255,255,255,.6)}
+.header .stats{font-size:12px;color:rgba(255,255,255,.5);display:flex;gap:16px}
+.header .stats span{cursor:default}
+/* Layout */
+.app{display:flex;flex:1;overflow:hidden}
+/* Sidebar */
+.sidebar{width:240px;background:#fff;border-right:1px solid #e8e8e8;overflow-y:auto;flex-shrink:0}
+.sidebar .search{padding:12px}
+.sidebar .search input{width:100%;padding:8px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;outline:none;transition:border-color .2s}
+.sidebar .search input:focus{border-color:#409eff}
+.table-list{list-style:none}
+.table-list li{padding:10px 20px;cursor:pointer;border-left:3px solid transparent;display:flex;align-items:center;justify-content:space-between;transition:all .15s;font-size:14px}
+.table-list li:hover{background:#f5f7fa}
+.table-list li.active{background:#ecf5ff;border-left-color:#409eff;color:#409eff;font-weight:600}
+.table-list li .badge{font-size:11px;background:#e8e8e8;color:#666;padding:1px 8px;border-radius:10px}
+.table-list li.active .badge{background:#409eff;color:#fff}
+.table-list li .icon{width:20px;margin-right:8px;text-align:center;font-size:16px}
+/* Content */
+.content{flex:1;padding:24px;overflow-y:auto;background:#f0f2f5}
+.content-header{margin-bottom:20px}
+.content-header h2{font-size:22px;font-weight:600;color:#1a1a2e}
+.content-header .desc{font-size:14px;color:#666;margin-top:4px}
+/* Cards */
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px;overflow:hidden}
+.card-title{font-size:15px;font-weight:600;padding:14px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px}
+.card-title .badge-count{font-size:12px;background:#ecf5ff;color:#409eff;padding:0 8px;border-radius:10px;font-weight:400}
+/* Table */
+.db-table{width:100%;border-collapse:collapse;font-size:13px}
+.db-table th{background:#fafafa;padding:10px 16px;text-align:left;font-weight:600;color:#555;border-bottom:2px solid #e8e8e8;white-space:nowrap}
+.db-table td{padding:9px 16px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.db-table tr:hover td{background:#fafafa}
+.db-table .pk-badge{display:inline-block;background:#e6f7ff;color:#1890ff;padding:0 6px;border-radius:3px;font-size:11px;margin-right:4px}
+.db-table .fk-badge{display:inline-block;background:#fff7e6;color:#fa8c16;padding:0 6px;border-radius:3px;font-size:11px;margin-right:4px}
+.db-table .nullable{color:#999;font-size:12px}
+.db-table .default-val{color:#999;font-size:12px;font-family:monospace}
+.type-tag{font-family:monospace;font-size:12px;background:#f5f5f5;padding:2px 8px;border-radius:3px;color:#555}
+/* Index list */
+.index-item{padding:10px 20px;border-bottom:1px solid #f0f0f0;font-size:13px}
+.index-item:last-child{border:none}
+.index-name{font-weight:600;color:#333}
+.index-type{display:inline-block;font-size:11px;padding:1px 6px;border-radius:3px;margin-left:8px}
+.index-type.unique{background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f}
+.index-type.btree{background:#e6f7ff;color:#1890ff;border:1px solid #91d5ff}
+.index-def{font-family:monospace;font-size:12px;color:#666;margin-top:4px;background:#fafafa;padding:6px 10px;border-radius:4px;overflow-x:auto}
+/* FK list */
+.fk-item{padding:10px 20px;border-bottom:1px solid #f0f0f0;font-size:13px;display:flex;align-items:center;gap:8px}
+.fk-item:last-child{border:none}
+.fk-arrow{color:#999;font-size:16px}
+.fk-table-name{color:#409eff;font-weight:500}
+/* Placeholder */
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#999;gap:12px}
+.placeholder .big-icon{font-size:64px;opacity:.3}
+.placeholder p{font-size:15px}
+/* Responsive */
+@media(max-width:768px){.sidebar{width:180px;font-size:13px}.content{padding:16px}.db-table{font-size:12px}}
+/* Collapse content */
+.collapse-header{cursor:pointer;user-select:none}
+.collapse-header:hover{background:#fafafa}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📖 慧报空间 · 数据库字典</h1>
+    <div class="sub">PostgreSQL 18 · work_report_db</div>
+  </div>
+  <div class="stats"></div>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="search">
+      <input type="text" id="searchInput" placeholder="搜索表名..." oninput="filterTables()">
+    </div>
+    <ul class="table-list" id="tableList"></ul>
+  </div>
+  <div class="content" id="contentArea">
+    <div class="placeholder">
+      <div class="big-icon">🗄️</div>
+      <p>请从左侧选择一张表查看结构</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// DATA — injected from live database query
+// =============================================
+const DB = (function() {
+  const tables = ["ai_config","audit_log","cycle_report","department","notification","report_record","report_relation","sys_user","system_log","work_record"];
+
+  const tableComments = {
+    ai_config: "AI 模型配置表（接口地址、模型名称、API Key）",
+    audit_log: "审批日志表（记录审批、退回、备注操作）",
+    cycle_report: "周期汇报表（周报/月报，含草稿/已提交/已退回/已通过状态）",
+    department: "部门表（树形结构，parent_id 自引用）",
+    notification: "通知表（催办、审批结果等系统通知）",
+    report_record: "汇报-工作记录关联表（多对多）",
+    report_relation: "汇报关系表（员工→上级的链路）",
+    sys_user: "系统用户表（员工、管理者、超级管理员）",
+    system_log: "系统操作日志表",
+    work_record: "工作记录表（日报/工作日志）"
+  };
+
+  const tableIcons = {
+    ai_config: "🤖",
+    audit_log: "📋",
+    cycle_report: "📊",
+    department: "🏢",
+    notification: "🔔",
+    report_record: "🔗",
+    report_relation: "👥",
+    sys_user: "👤",
+    system_log: "📋",
+    work_record: "📝"
+  };
+
+  // Columns per table
+  const columns = {
+    ai_config: [
+      { name:"config_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"配置ID（自增主键）" },
+      { name:"config_key", type:"varchar(100)", len:100, nullable:"NO", default:null, pk:false, fk:null, comment:"配置键名（唯一）" },
+      { name:"config_value", type:"text", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"配置值" },
+      { name:"config_desc", type:"varchar(200)", len:200, nullable:"YES", default:null, pk:false, fk:null, comment:"配置描述" },
+      { name:"update_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"更新时间" }
+    ],
+    audit_log: [
+      { name:"log_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"日志ID（自增主键）" },
+      { name:"report_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"cycle_report.report_id", comment:"关联汇报ID" },
+      { name:"operator_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"操作人ID" },
+      { name:"action_type", type:"smallint", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"操作类型 1=退回 2=备注 3=通过" },
+      { name:"action_comment", type:"text", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"操作内容/审批意见" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" }
+    ],
+    cycle_report: [
+      { name:"report_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"汇报ID（自增主键）" },
+      { name:"user_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"提交人ID" },
+      { name:"receiver_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"接收人（审批人）ID" },
+      { name:"report_type", type:"smallint", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"汇报类型 1=周报 2=月报" },
+      { name:"cycle_start", type:"date", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"周期开始日期" },
+      { name:"cycle_end", type:"date", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"周期结束日期" },
+      { name:"report_content", type:"text", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"汇报内容" },
+      { name:"generate_type", type:"smallint", len:null, nullable:"YES", default:"1", pk:false, fk:null, comment:"生成方式 1=手动 2=AI" },
+      { name:"report_status", type:"smallint", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"状态 0=草稿 1=已提交 2=已退回 3=已通过" },
+      { name:"reject_reason", type:"text", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"退回原因" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" },
+      { name:"submit_time", type:"timestamp", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"提交时间" },
+      { name:"is_delete", type:"smallint", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"软删除标记 0=正常 1=删除" },
+      { name:"update_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"更新时间" }
+    ],
+    department: [
+      { name:"dept_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"部门ID（自增主键）" },
+      { name:"dept_name", type:"varchar(100)", len:100, nullable:"NO", default:null, pk:false, fk:null, comment:"部门名称" },
+      { name:"parent_id", type:"bigint", len:null, nullable:"YES", default:null, pk:false, fk:"department.dept_id", comment:"父部门ID（自引用，树形结构）" },
+      { name:"sort_order", type:"int", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"排序序号" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" }
+    ],
+    notification: [
+      { name:"id", type:"int", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"通知ID（自增主键）" },
+      { name:"user_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"接收人ID" },
+      { name:"type", type:"varchar(20)", len:20, nullable:"NO", default:null, pk:false, fk:null, comment:"通知类型 submit/approve/reject/comment" },
+      { name:"title", type:"varchar(200)", len:200, nullable:"NO", default:null, pk:false, fk:null, comment:"通知标题" },
+      { name:"content", type:"text", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"通知内容" },
+      { name:"report_id", type:"bigint", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"关联汇报ID（跳转用）" },
+      { name:"is_read", type:"smallint", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"已读标记 0=未读 1=已读" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" }
+    ],
+    report_record: [
+      { name:"id", type:"int", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"关联ID（自增主键）" },
+      { name:"report_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"cycle_report.report_id", comment:"汇报ID" },
+      { name:"record_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"work_record.record_id", comment:"工作记录ID" },
+      { name:"created_at", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"关联时间" }
+    ],
+    report_relation: [
+      { name:"relation_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"关系ID（自增主键）" },
+      { name:"reporter_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"汇报人（下属）ID" },
+      { name:"receiver_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"接收人（上级）ID" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" }
+    ],
+    sys_user: [
+      { name:"user_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"用户ID（自增主键）" },
+      { name:"username", type:"varchar(50)", len:50, nullable:"NO", default:null, pk:false, fk:null, comment:"用户名（唯一）" },
+      { name:"real_name", type:"varchar(50)", len:50, nullable:"NO", default:null, pk:false, fk:null, comment:"真实姓名" },
+      { name:"password", type:"varchar(100)", len:100, nullable:"NO", default:null, pk:false, fk:null, comment:"密码（bcrypt 哈希）" },
+      { name:"role_type", type:"smallint", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"角色 1=普通员工 2=管理者 3=超级管理员" },
+      { name:"dept_id", type:"bigint", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"所属部门ID" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" },
+      { name:"update_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"更新时间" },
+      { name:"is_delete", type:"smallint", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"软删除标记 0=正常 1=删除" },
+      { name:"token_version", type:"integer", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"Token 版本号（清退时+1，旧token失效）" },
+      { name:"last_active_time", type:"timestamp", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"最后活跃时间（判断在线用）" }
+    ],
+    system_log: [
+      { name:"log_id", type:"serial", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"日志ID（自增主键）" },
+      { name:"user_id", type:"integer", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"操作用户ID" },
+      { name:"username", type:"varchar(50)", len:50, nullable:"NO", default:null, pk:false, fk:null, comment:"用户名" },
+      { name:"real_name", type:"varchar(50)", len:50, nullable:"NO", default:null, pk:false, fk:null, comment:"真实姓名" },
+      { name:"action", type:"varchar(50)", len:50, nullable:"NO", default:null, pk:false, fk:null, comment:"操作类型：login/save_draft/submit_record/ai_generate/approve/reject/backup/restore/kick/clean_logs" },
+      { name:"target_type", type:"varchar(50)", len:50, nullable:"YES", default:null, pk:false, fk:null, comment:"操作对象类型（user/record/report等）" },
+      { name:"target_id", type:"integer", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"操作对象ID" },
+      { name:"details", type:"text", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"操作详情" },
+      { name:"ip_address", type:"varchar(50)", len:50, nullable:"YES", default:null, pk:false, fk:null, comment:"请求IP" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" }
+    ],
+    work_record: [
+      { name:"record_id", type:"bigint", len:null, nullable:"NO", default:"nextval(...)", pk:true, fk:null, comment:"记录ID（自增主键）" },
+      { name:"user_id", type:"bigint", len:null, nullable:"NO", default:null, pk:false, fk:"sys_user.user_id", comment:"所属用户ID" },
+      { name:"record_date", type:"date", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"记录日期" },
+      { name:"record_content", type:"text", len:null, nullable:"NO", default:null, pk:false, fk:null, comment:"工作内容" },
+      { name:"record_status", type:"smallint", len:null, nullable:"NO", default:"0", pk:false, fk:null, comment:"状态 0=草稿 1=已提交" },
+      { name:"display_id", type:"varchar(20)", len:20, nullable:"YES", default:null, pk:false, fk:null, comment:"展示编号（YYMMDDHHmm 时间格式）" },
+      { name:"create_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"创建时间" },
+      { name:"submit_time", type:"timestamp", len:null, nullable:"YES", default:null, pk:false, fk:null, comment:"提交时间" },
+      { name:"update_time", type:"timestamp", len:null, nullable:"YES", default:"now()", pk:false, fk:null, comment:"更新时间" },
+      { name:"is_delete", type:"smallint", len:null, nullable:"YES", default:"0", pk:false, fk:null, comment:"软删除标记 0=正常 1=删除" }
+    ]
+  };
+
+  // Indexes per table
+  const indexes = {
+    ai_config: [
+      { name:"ai_config_pkey", def:"CREATE UNIQUE INDEX ON ai_config (config_id)", type:"UNIQUE BTREE" },
+      { name:"ai_config_config_key_key", def:"CREATE UNIQUE INDEX ON ai_config (config_key)", type:"UNIQUE BTREE" }
+    ],
+    audit_log: [
+      { name:"audit_log_pkey", def:"CREATE UNIQUE INDEX ON audit_log (log_id)", type:"UNIQUE BTREE" }
+    ],
+    cycle_report: [
+      { name:"cycle_report_pkey", def:"CREATE UNIQUE INDEX ON cycle_report (report_id)", type:"UNIQUE BTREE" },
+      { name:"idx_cycle_report_user_status", def:"CREATE INDEX ON cycle_report (user_id, report_status)", type:"BTREE" }
+    ],
+    department: [
+      { name:"department_pkey", def:"CREATE UNIQUE INDEX ON department (dept_id)", type:"UNIQUE BTREE" }
+    ],
+    notification: [
+      { name:"notification_pkey", def:"CREATE UNIQUE INDEX ON notification (id)", type:"UNIQUE BTREE" },
+      { name:"idx_notification_user_read", def:"CREATE INDEX ON notification (user_id, is_read)", type:"BTREE" }
+    ],
+    report_record: [
+      { name:"report_record_pkey", def:"CREATE UNIQUE INDEX ON report_record (id)", type:"UNIQUE BTREE" },
+      { name:"report_record_report_id_record_id_key", def:"CREATE UNIQUE INDEX ON report_record (report_id, record_id)", type:"UNIQUE BTREE" },
+      { name:"idx_report_record_report", def:"CREATE INDEX ON report_record (report_id)", type:"BTREE" },
+      { name:"idx_report_record_record", def:"CREATE INDEX ON report_record (record_id)", type:"BTREE" }
+    ],
+    report_relation: [
+      { name:"report_relation_pkey", def:"CREATE UNIQUE INDEX ON report_relation (relation_id)", type:"UNIQUE BTREE" }
+    ],
+    sys_user: [
+      { name:"sys_user_pkey", def:"CREATE UNIQUE INDEX ON sys_user (user_id)", type:"UNIQUE BTREE" },
+      { name:"sys_user_username_key", def:"CREATE UNIQUE INDEX ON sys_user (username)", type:"UNIQUE BTREE" }
+    ],
+    work_record: [
+      { name:"work_record_pkey", def:"CREATE UNIQUE INDEX ON work_record (record_id)", type:"UNIQUE BTREE" },
+      { name:"idx_work_record_user_date", def:"CREATE INDEX ON work_record (user_id, record_date)", type:"BTREE" }
+    ]
+  };
+
+  return { tables, tableComments, tableIcons, columns, indexes };
+})();
+
+// =============================================
+// RENDER
+// =============================================
+let currentTable = null;
+
+function renderSidebar() {
+  const ul = document.getElementById('tableList');
+  ul.innerHTML = DB.tables.map(t => {
+    const cols = DB.columns[t] || [];
+    const icon = DB.tableIcons[t] || '📄';
+    return `<li data-table="${t}" onclick="selectTable('${t}')">
+      <span><span class="icon">${icon}</span>${t}</span>
+      <span class="badge">${cols.length} 列</span>
+    </li>`;
+  }).join('');
+}
+
+function filterTables() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('#tableList li').forEach(li => {
+    li.style.display = li.dataset.table.includes(q) ? '' : 'none';
+  });
+  // If active table is hidden, show placeholder
+  if (currentTable) {
+    const visible = document.querySelector(`#tableList li[data-table="${currentTable}"]`);
+    if (!visible || visible.style.display === 'none') {
+      document.getElementById('contentArea').innerHTML = `
+        <div class="placeholder">
+          <div class="big-icon">🔍</div>
+          <p>当前表已被过滤，请选择其他表</p>
+        </div>`;
+    }
+  }
+}
+
+function selectTable(name) {
+  currentTable = name;
+  // Highlight
+  document.querySelectorAll('#tableList li').forEach(li => li.classList.remove('active'));
+  document.querySelector(`#tableList li[data-table="${name}"]`).classList.add('active');
+
+  const cols = DB.columns[name] || [];
+  const idxs = DB.indexes[name] || [];
+  const comment = DB.tableComments[name] || '';
+  const icon = DB.tableIcons[name] || '📄';
+
+  // Count PKs, FKs
+  const pkCount = cols.filter(c => c.pk).length;
+  const fkCount = cols.filter(c => c.fk).length;
+
+  let html = `
+    <div class="content-header">
+      <h2>${icon} ${name}</h2>
+      <div class="desc">${comment} · 共 ${cols.length} 字段 · ${pkCount} 主键 · ${fkCount} 外键 · ${idxs.length} 索引</div>
+    </div>
+
+    <!-- 字段列表 -->
+    <div class="card">
+      <div class="card-title">📌 字段定义 <span class="badge-count">${cols.length}</span></div>
+      <table class="db-table">
+        <thead><tr>
+          <th style="width:30px">#</th>
+          <th style="width:180px">字段名</th>
+          <th style="width:140px">类型</th>
+          <th style="width:70px">可空</th>
+          <th style="width:140px">默认值</th>
+          <th>说明</th>
+        </tr></thead>
+        <tbody>`;
+
+  cols.forEach((c, i) => {
+    const rowNum = i + 1;
+    const badges = [];
+    if (c.pk) badges.push('<span class="pk-badge">PK</span>');
+    if (c.fk) badges.push(`<span class="fk-badge">FK → ${c.fk}</span>`);
+
+    const typeStr = c.type + (c.len ? `(${c.len})` : '');
+    const nullableStr = c.nullable === 'NO' ? '❌ <span class="nullable">NOT NULL</span>' : '✅ <span class="nullable">NULL</span>';
+    const defaultStr = c.default ? `<span class="default-val">${c.default}</span>` : '<span class="default-val" style="color:#ddd">—</span>';
+    const commentStr = c.comment || '<span style="color:#ccc">—</span>';
+
+    html += `<tr>
+      <td style="color:#999;font-size:12px">${rowNum}</td>
+      <td><strong>${c.name}</strong> ${badges.join(' ')}</td>
+      <td><span class="type-tag">${typeStr}</span></td>
+      <td>${nullableStr}</td>
+      <td>${defaultStr}</td>
+      <td>${commentStr}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+
+  // 索引
+  if (idxs.length > 0) {
+    html += `<div class="card">
+      <div class="card-title">🔍 索引 <span class="badge-count">${idxs.length}</span></div>`;
+    idxs.forEach(idx => {
+      const isUnique = idx.type.includes('UNIQUE');
+      html += `<div class="index-item">
+        <span class="index-name">${idx.name}</span>
+        <span class="index-type ${isUnique ? 'unique' : 'btree'}">${isUnique ? 'UNIQUE' : 'INDEX'}</span>
+        <span class="index-type btree">BTREE</span>
+        <div class="index-def">${idx.def}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // 外键汇总
+  const fkCols = cols.filter(c => c.fk);
+  if (fkCols.length > 0) {
+    html += `<div class="card">
+      <div class="card-title">🔗 外键关系 <span class="badge-count">${fkCols.length}</span></div>`;
+    fkCols.forEach(c => {
+      html += `<div class="fk-item">
+        <strong>${c.name}</strong>
+        <span class="fk-arrow">→</span>
+        <span class="fk-table-name">${c.fk}</span>
+        <span style="color:#999;font-size:12px">（${c.comment || ''}）</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // SQL 示例
+  html += `<div class="card">
+    <div class="card-title">💡 常用查询</div>
+    <div class="index-item">
+      <div style="font-size:13px;margin-bottom:8px;font-weight:500">全表查询</div>
+      <div class="index-def">SELECT * FROM ${name} LIMIT 100;</div>
+    </div>
+    <div class="index-item">
+      <div style="font-size:13px;margin-bottom:8px;font-weight:500">统计行数</div>
+      <div class="index-def">SELECT COUNT(*) AS total FROM ${name};</div>
+    </div>`;
+
+  // Add specific helpful queries for certain tables
+  if (name === 'sys_user') {
+    html += `<div class="index-item">
+      <div style="font-size:13px;margin-bottom:8px;font-weight:500">查询用户及其部门</div>
+      <div class="index-def">SELECT u.user_id, u.username, u.real_name, u.role_type, d.dept_name
+FROM sys_user u
+LEFT JOIN department d ON u.dept_id = d.dept_id
+WHERE u.is_delete = 0
+ORDER BY u.user_id;</div>
+    </div>`;
+  } else if (name === 'cycle_report') {
+    html += `<div class="index-item">
+      <div style="font-size:13px;margin-bottom:8px;font-weight:500">查询汇报及提交人</div>
+      <div class="index-def">SELECT cr.report_id, u.real_name AS reporter, cr.report_type,
+       cr.cycle_start, cr.cycle_end, cr.report_status
+FROM cycle_report cr
+JOIN sys_user u ON cr.user_id = u.user_id
+WHERE cr.is_delete = 0
+ORDER BY cr.create_time DESC;</div>
+    </div>`;
+  } else if (name === 'report_relation') {
+    html += `<div class="index-item">
+      <div style="font-size:13px;margin-bottom:8px;font-weight:500">查询完整汇报链路</div>
+      <div class="index-def">SELECT u1.real_name AS reporter, u2.real_name AS receiver
+FROM report_relation rr
+JOIN sys_user u1 ON rr.reporter_id = u1.user_id
+JOIN sys_user u2 ON rr.receiver_id = u2.user_id
+ORDER BY u2.real_name, u1.real_name;</div>
+    </div>`;
+  } else if (name === 'work_record') {
+    html += `<div class="index-item">
+      <div style="font-size:13px;margin-bottom:8px;font-weight:500">查询某用户周期内记录</div>
+      <div class="index-def">SELECT display_id, record_date, record_content
+FROM work_record
+WHERE user_id = 1 AND record_status = 1 AND is_delete = 0
+AND record_date >= '2026-01-01' AND record_date <= '2026-12-31'
+ORDER BY record_date;</div>
+    </div>`;
+  }
+
+  html += `</div>`;
+
+  document.getElementById('contentArea').innerHTML = html;
+}
+
+// Init
+renderSidebar();
+</script>
+</body>
+</html>

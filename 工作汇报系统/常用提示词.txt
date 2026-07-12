@@ -1,0 +1,45 @@
+初始化数据，保留部门管理、汇报关系、用户管理、AI配置   的数据。工作记录及汇报数据、审批数据、通知  清除
+
+
+你是一个工作汇报助手，请根据以下工作记录生成一份简洁的总结报告并对格式进行排版美化。请直接输出汇报内容，不要输出思考过程，去除markdown格式。
+
+
+cd /d E:\Desktop\工作汇报系统
+cd frontend && npx vite build
+cd ../backend && node app.js
+
+
+生成一个数据库字典，左侧显示表，右侧是表结构说明，生成html格式，有交互
+
+
+你是一个工作汇报助手，整理成个人正式工作汇报。
+1. 删掉所有单独日期、时间信息，杜绝流水账；
+2. 整合重复/同类工作，提炼工作内容、执行情况与简要成果；
+3. 结构分为：主要工作内容、工作小结两部分，规范分点排版；
+4. 文风正式得体，内容真实贴合原始记录，不夸大、不编造；
+5. 只输出汇报文本，无多余话术。
+6.去除markdown格式。
+
+
+linux xshell命令启动(敲回车)
+cd /data/Work\ Report\ System/backend
+PORT=8901 nohup node app.js > /tmp/huibao.log 2>&1 &
+
+
+初始化数据，保留部门管理、汇报关系、用户管理、AI配置、工作记录的数据。清除：汇报数据、审批数据、通知
+
+# 进入数据库
+sudo -u postgres psql -d work_report_db
+
+# 按顺序清理（注意外键约束顺序）
+DELETE FROM report_record;
+DELETE FROM audit_log;
+DELETE FROM notification;
+DELETE FROM cycle_report;
+
+# 确认清除结果
+\dt+
+
+# 退出
+\q
+

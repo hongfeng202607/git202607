@@ -1,0 +1,204 @@
+慧报空间 - 项目文件与目录说明
+===================================
+最后更新：2026-05-28
+项目根目录：E:\Desktop\工作汇报系统
+===================================
+
+一、根目录文件
+---------------
+
+index.html
+  - 根级入口 HTML 文件（备用/重定向）
+  
+dev.js
+  - 开发模式启动器（Node.js 脚本）
+  - 功能：杀死旧进程 → 构建前端 → 启动后端(8902) + 前端开发服务器(5173)
+  - 运行方式：node dev.js 或 start.bat
+
+start.bat
+  - 开发模式快捷启动批处理
+  - 检查 Node.js 环境，运行 dev.js
+  - GBK 编码（必须，cmd 解析用）
+
+start-prod.bat
+  - 生产模式启动批处理
+  - 自动构建前端 dist → 启动后端 npm start
+  - 同事访问 http://你的IP:8902
+
+start.bat.bak
+  - start.bat 旧版本备份
+
+stop.bat
+  - 停止服务批处理
+  - 强制终止所有 node.exe 进程
+
+start.sh
+  - Linux 启动脚本（自动检测依赖、构建、生成密钥、启动）
+  - 部署到 Linux 服务器时使用
+
+backup.sh
+  - Linux 数据库备份脚本
+  - 自动生成带时间戳的 .sql.gz 文件，保留 30 天
+
+restore.sh
+  - Linux 数据库恢复脚本
+  - 交互式选择备份文件或直接指定文件恢复
+
+工作汇报系统方案.docx
+  - 项目方案文档（45KB Word 文件）
+
+慧报空间-Linux部署手册.html
+  - Linux 部署手册（11 步完整流程，含安装 PostgreSQL）
+
+操作手册.html
+  - 用户操作手册（网页格式）
+
+常用提示词.txt
+  - 提示词记录
+
+===================================
+二、.workbuddy/ 目录（工作记忆）
+-----------------------------------
+
+.workbuddy/memory/2026-05-26.md
+  - 开发日志、bug 修复记录、排坑经验
+
+.workbuddy/memory/2026-05-28.md
+  - Linux 部署适配、分页、树形展示、IndexedDB 移除等开发日志
+
+===================================
+三、backend/ 后端目录
+-----------------------
+
+backend/app.js
+  - Express 5 主入口
+  - 注册 CORS、morgan、JSON 解析中间件
+  - 挂载 7 组 API 路由
+  - 生产环境托管 frontend/dist 静态文件
+  - 健康检查 /api/health
+  - 404/500 错误处理
+
+backend/package.json
+  - 后端依赖清单
+  - 主要依赖：express 5, cors, morgan, jsonwebtoken, bcryptjs, pg, multer, uuid
+
+backend/jwt-secret.txt
+  - JWT 签名密钥（64位十六进制字符串）
+  - 如丢失，登录将失败，需重新生成
+
+backend/ecosystem.config.js
+  - PM2 生产环境配置
+  - 日志输出、自动重启、内存限制
+  - 部署到 Linux 时配合 pm2 start 使用
+
+backend/backup.js
+  - 数据库备份脚本（自动适配 Linux/Windows）
+  - 自动检测 pg_dump 路径
+
+backend/config/
+  - index.js：全局配置（端口 8902、JWT 过期时间 24h、数据库连接参数）
+  - db.js：PostgreSQL 连接池（最大 20 连接，超时 30s，日期类型直接返回字符串）
+
+backend/middleware/
+  - auth.js：JWT 认证中间件 + 角色授权中间件（支持 role 1/2/3）
+
+backend/routes/
+  - auth.js：登录、获取用户信息、修改密码（含登录日志）
+  - user.js：用户 CRUD + 汇报关系 CRUD
+  - record.js：工作记录 CRUD、提交、撤回、批量导入（含操作日志）
+  - report.js：周期汇报 CRUD + AI 代理（测试/生成）+ AI 配置（含 AI 生成日志）
+  - audit.js：审批管理（列表/通过/退回/备注/重新提交）+ 审批日志（含操作日志）
+  - notification.js：通知管理（列表/未读数/标记已读）
+  - dept.js：部门 CRUD（树形结构，含删除约束、同名校验）
+  - system.js：系统管理（在线用户/清退/备份/恢复/日志列表/AI统计/日志清理）
+
+===================================
+四、database/ 数据库目录
+--------------------------
+
+database/init.sql
+  - PostgreSQL 初始化脚本
+  - 包含 10 张表的 CREATE TABLE DDL
+  - 初始数据：7 个默认部门、4 条 AI 配置、admin 超级管理员
+  - 编码必须为 UTF-8
+
+===================================
+五、frontend/ 前端目录
+------------------------
+
+frontend/index.html
+  - 前端 SPA 入口 HTML
+  - 标题：慧报空间
+
+frontend/package.json
+  - 前端依赖清单
+  - 主要依赖：vue 3, vue-router, pinia, element-plus, axios, xlsx
+  - 开发依赖：vite 8, @vitejs/plugin-vue
+
+frontend/vite.config.js
+  - Vite 构建配置
+  - 端口 5173
+  - 代理 /api → http://127.0.0.1:8902
+
+frontend/src/
+  - main.js：Vue 应用入口（注册 Pinia/Router/Element Plus）
+  - App.vue：根组件（仅 router-view）
+  - style.css：全局样式
+
+frontend/src/api/
+  - index.js：Axios 封装（自动注入 token，401 拦截跳转登录，超时 120 秒）
+
+frontend/src/utils/
+  - format.js：日期格式化工具函数（去掉毫秒，统一 YYYY-MM-DD HH:mm:ss 格式）
+
+frontend/src/router/
+  - index.js：Vue Router（登录守卫，懒加载路由，角色权限控制）
+
+frontend/src/stores/
+  - auth.js：Pinia 认证状态管理
+
+frontend/src/views/
+  - Login.vue：登录页（紫色渐变 + 白色卡片）
+  - Layout.vue：主布局（侧边栏 + 顶栏 + 通知铃铛 + 用户菜单）
+  - Dashboard.vue：工作台（统计卡片 + 通知列表 + 最近记录 10 条）
+  - Records.vue：工作记录管理（新增/编辑/提交/撤回/分页/导出/导入）
+  - Reports.vue：周期汇报管理（新建/编辑/AI 生成/草稿/审批日志）
+  - Audit.vue：审批管理（通过/退回/备注）
+  - admin/Departments.vue：部门管理（树形 CRUD，同名校验，超管专用）
+  - admin/Users.vue：用户管理（部门树形分组展示，超管专用）
+  - admin/Relations.vue：汇报关系管理（部门树形分组展示，超管专用）
+  - admin/AiConfig.vue：AI 配置管理（仅 admin）
+  - admin/System.vue：系统管理（在线用户/备份恢复/系统日志，仅 admin）
+
+frontend/dist/
+  - 前端构建产物（自动生成，勿手动修改）
+  - 生产环境下由 backend/app.js 托管
+
+===================================
+六、项目总览
+---------------
+
+功能模块          前端页面                   后端 API 分组             数据库表
+-------------    -----------------         --------------------      --------------------
+用户管理         admin/Users.vue            /api/users                sys_user
+部门管理         admin/Departments.vue      /api/departments          department
+汇报关系         admin/Relations.vue        /api/relations            report_relation
+AI 配置          admin/AiConfig.vue         /api/ai-config            ai_config
+工作记录         Records.vue                /api/records              work_record
+周期汇报         Reports.vue                /api/reports              cycle_report, report_record
+审批管理         Audit.vue                  /api/audit                audit_log
+通知             Layout.vue(铃铛)           /api/notifications        notification
+系统管理         admin/System.vue           /api/system               system_log, sys_user
+登录/密码        Login.vue                  /api/auth                 sys_user
+
+===================================
+七、新增 Linux 部署文件
+-------------------------
+
+start.sh             Linux 启动脚本（自动检测依赖/构建/启动）
+backup.sh            Linux 数据库备份脚本（定时备份用）
+restore.sh           Linux 数据库恢复脚本（交互式选择）
+backend/ecosystem.config.js   PM2 进程守护配置
+backend/backup.js            备份脚本（自动适配 Linux/Windows）
+
+===================================

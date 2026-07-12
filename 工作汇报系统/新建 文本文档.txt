@@ -1,0 +1,38 @@
+
+
+## Linux 生产环境部署速查
+
+### 基本原则
+
+| 改了什么 | 更新方法 | 是否需要构建 |
+|---|---|---|
+| 后端 .js | scp 替换文件 → `sudo systemctl restart huibao` | ❌ 不需要 |
+| 前端 .vue / .js | 必须重新构建生成 dist/ | ✅ **必须** `npm run build` |
+
+### 完整操作流程
+
+```bash
+# 1. 停服务
+sudo systemctl stop huibao
+
+# 2. 替换文件
+#    后端：直接传 .js 到 backend/routes/
+#    前端：.vue 源文件传了也没用，需要在服务器构建
+
+# 3. 如果改了前端，重新构建
+cd "/data/Work Report System/frontend"
+npm run build
+
+# 4. 启动服务
+sudo systemctl start huibao
+
+# 5. 确认
+sudo systemctl status huibao
+```
+
+### 不走弯路
+
+- **后端改了 →** 替换 .js → restart，完事
+- **前端改了 →** 必须在服务器跑 `npm run build`（或在本地 build 后把 `dist/` 传上去）
+- **两个都改了 →** 先替换后端 .js → 再前端 build → restart
+- **不需要**在服务器重装依赖（除非改了 `package.json`）

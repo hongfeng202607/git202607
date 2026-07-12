@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慧报空间 - 部署方案（Windows · 已归档）</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.8;color:#333;max-width:960px;margin:0 auto;padding:40px 20px;background:#f8f9fa}
+.archived{background:#ffe58f;color:#ad6800;padding:10px 16px;border-radius:6px;margin-bottom:20px;font-size:14px}
+h1{font-size:28px;border-bottom:3px solid #409EFF;padding-bottom:10px;color:#1a1a2e}
+h2{font-size:22px;color:#409EFF;margin-top:36px;border-left:4px solid #409EFF;padding-left:12px}
+h3{font-size:17px;color:#303133;margin-top:24px}
+pre{background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:8px;overflow-x:auto;font-size:13px;line-height:1.5}
+code{background:#e8e8e8;padding:2px 6px;border-radius:3px;font-size:14px}
+pre code{background:transparent;padding:0}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}
+th,td{border:1px solid #ddd;padding:10px 14px;text-align:left}
+th{background:#409EFF;color:#fff;font-weight:500}
+tr:nth-child(even){background:#f2f6fc}
+.card{background:#fff;border-radius:12px;padding:20px 24px;margin:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.tag{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:500}
+.tag-blue{background:#e6f1fb;color:#185fa5}
+.tag-green{background:#eaf3de;color:#3b6d11}
+.tag-orange{background:#faeda;color:#854f0b}
+.tag-red{background:#fcebeb;color:#a32d2d}
+.step{display:flex;gap:12px;margin:12px 0;align-items:flex-start}
+.step-num{background:#409EFF;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.step-body{flex:1}
+.warn{background:#fdf6ec;border-left:4px solid #e6a23c;padding:12px 16px;border-radius:6px;margin:12px 0;font-size:14px}
+.info{background:#e6f1fb;border-left:4px solid #409EFF;padding:12px 16px;border-radius:6px;margin:12px 0;font-size:14px}
+.arch-box{text-align:center;padding:14px;border-radius:8px;margin:4px;font-weight:500}
+.arch-row{display:flex;justify-content:center;gap:8px;margin:8px 0;flex-wrap:wrap}
+.arrow{text-align:center;font-size:20px;color:#909399;margin:0}
+</style>
+</head>
+<body>
+
+<h1>📋 慧报空间 · 完整部署方案</h1>
+<div class="archived">📌 此文档已归档。生产环境已迁移至 Linux 部署，请参考 慧报空间-Linux部署手册.html</div>
+
+<div class="card">
+<p><strong>项目名称：</strong>慧报空间（Work Report System）</p>
+<p><strong>版本：</strong>v1.0</p>
+<p><strong>技术栈：</strong>Vue 3 + Element Plus + Express 5 + PostgreSQL 18</p>
+<p><strong>最后更新：</strong>2026-05-27</p>
+</div>
+
+<!-- ==================== 一、系统架构 ==================== -->
+<h2>一、系统架构</h2>
+
+<div class="card">
+<h3>整体架构图</h3>
+<div style="text-align:center;padding:20px 0">
+<div class="arch-row">
+<div class="arch-box" style="background:#e6f1fb;border:1px solid #85b7eb;width:140px">🌐 浏览器<br><span style="font-size:12px;color:#666">(Chrome/Edge)</span></div>
+</div>
+<div class="arrow">↓ ↑ HTTP</div>
+<div class="arch-row" style="gap:20px">
+<div class="arch-box" style="background:#eaf3de;border:1px solid #97c459;width:180px">📦 Vite Dev Server<br><span style="font-size:12px;color:#666">端口 5173（开发用）</span></div>
+<div class="arch-box" style="background:#eaf3de;border:1px solid #97c459;width:180px">🚀 Express 服务<br><span style="font-size:12px;color:#666">端口 8902（生产）</span></div>
+</div>
+<div class="arrow">↓</div>
+<div class="arch-box" style="background:#faeda;border:1px solid #ef9f27;width:200px;margin:0 auto">🗄️ PostgreSQL 数据库<br><span style="font-size:12px;color:#666">本地端口 5432</span></div>
+</div>
+
+<h3>前后端分离架构</h3>
+<table>
+<tr><th>组件</th><th>技术</th><th>端口</th><th>说明</th></tr>
+<tr><td>前端 SPA</td><td>Vue 3 + Element Plus</td><td>5173（开发）/ 8902（生产）</td><td>单页应用，路由懒加载，Pinia 状态管理</td></tr>
+<tr><td>后端 API</td><td>Express 5 + Node.js</td><td>8902</td><td>RESTful API，JWT 认证，角色权限控制</td></tr>
+<tr><td>数据库</td><td>PostgreSQL 18</td><td>5432</td><td>9 张业务表，递归 CTE 查询</td></tr>
+<tr><td>AI 代理</td><td>后端转发</td><td>-</td><td>后端转发 OpenAI 兼容 API，CORS 安全</td></tr>
+</table>
+</div>
+
+<!-- ==================== 二、环境要求 ==================== -->
+<h2>二、部署环境要求</h2>
+
+<div class="card">
+<h3>2.1 硬件要求</h3>
+<table>
+<tr><th>配置项</th><th>最低要求</th><th>推荐配置</th></tr>
+<tr><td>CPU</td><td>2 核</td><td>4 核</td></tr>
+<tr><td>内存</td><td>4 GB</td><td>8 GB</td></tr>
+<tr><td>硬盘</td><td>10 GB 可用</td><td>20 GB SSD</td></tr>
+<tr><td>网络</td><td>局域网 100Mbps</td><td>局域网 1000Mbps</td></tr>
+</table>
+
+<h3>2.2 软件要求</h3>
+<table>
+<tr><th>软件</th><th>版本要求</th><th>下载地址</th><th>验证命令</th></tr>
+<tr><td>Node.js</td><td>≥ 20.0.0</td><td>https://nodejs.org</td><td><code>node -v</code></td></tr>
+<tr><td>PostgreSQL</td><td>≥ 16.0</td><td>https://www.postgresql.org/download/</td><td><code>psql -V</code></td></tr>
+<tr><td>npm</td><td>≥ 9.0（随 Node.js）</td><td>-</td><td><code>npm -v</code></td></tr>
+<tr><td>操作系统</td><td>Windows 10/11 或 Linux</td><td>-</td><td>-</td></tr>
+</table>
+
+<h3>2.3 网络要求</h3>
+<ul>
+<li>服务端需开放 <strong>TCP 8902</strong> 端口（防火墙入站规则）</li>
+<li>所有客户端浏览器可访问服务端 IP:8902</li>
+<li>数据库端口 5432 仅本地访问，无需对外开放</li>
+<li>如需 AI 功能，服务端需能访问 AI API 地址（支持 OpenAI 兼容接口 / LM Studio 本地模型）</li>
+</ul>
+</div>
+
+<!-- ==================== 三、安装步骤 ==================== -->
+<h2>三、详细安装步骤</h2>
+
+<div class="card">
+<h3>3.1 安装 Node.js</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">访问 <a href="https://nodejs.org" target="_blank">nodejs.org</a>，下载 LTS 版本（≥ 20.x）</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">安装时勾选"Add to PATH"，一路 Next 完成</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">打开命令行验证：<pre><code>node -v    # 应显示 v20.x.x 或更高
+npm -v     # 应显示 9.x.x 或更高</code></pre></div></div>
+</div>
+
+<div class="card">
+<h3>3.2 安装 PostgreSQL</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">下载 PostgreSQL 18 安装包（<a href="https://www.postgresql.org/download/windows/" target="_blank">官方下载</a>）</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">安装时注意：<br>
+- <strong>安装路径：</strong><code>F:\PostgreSQL\18</code>（本例）<br>
+- <strong>端口：</strong>5432（默认）<br>
+- <strong>超级用户密码：</strong>设置密码（本例为 <code>123456</code>）<br>
+- <strong>Locale：</strong>选择"Chinese, Simplified China" 或默认</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">验证安装：<pre><code>"F:\PostgreSQL\18\bin\psql.exe" -U postgres -V</code></pre></div></div>
+</div>
+
+<div class="card">
+<h3>3.3 安装项目依赖</h3>
+<div class="step"><div class="step-num">1</div><div class="step-body">进入项目目录：<pre><code>cd E:\Desktop\工作汇报系统</code></pre></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">安装后端依赖：<pre><code>cd backend
+npm install</code></pre></div></div>
+<div class="step"><div class="step-num">3</div><div class="step-body">安装前端依赖：<pre><code>cd ../frontend
+npm install</code></pre></div></div>
+</div>
+
+<div class="card">
+<h3>3.4 初始化数据库</h3>
+<div class="info">确保 PostgreSQL 服务已启动（可通过 Windows 服务管理器或重启电脑启动）。</div>
+<div class="step"><div class="step-num">1</div><div class="step-body">创建数据库并执行初始化脚本：<pre><code>"F:\PostgreSQL\18\bin\psql.exe" -U postgres -c "CREATE DATABASE work_report_db;"
+"F:\PostgreSQL\18\bin\psql.exe" -U postgres -d work_report_db -f "E:\Desktop\工作汇报系统\database\init.sql"</code></pre></div></div>
+<div class="step"><div class="step-num">2</div><div class="step-body">验证表是否创建成功：<pre><code>"F:\PostgreSQL\18\bin\psql.exe" -U postgres -d work_report_db -c "\dt"</code></pre>应显示 9 张表：<code>ai_config, audit_log, cycle_report, department, notification, report_record, report_relation, sys_user, work_record</code></div></div>
+<div class="warn">如果使用 Node.js 执行 init.sql 而非 psql，确保文件编码为 <strong>UTF-8</strong>。</div>
+</div>
+
+<div class="card">
+<h3>3.5 配置数据库连接</h3>
+<p>编辑 <code>backend/config/index.js</code>，确认数据库连接参数：</p>
+<pre><code>db: {
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME || 'work_report_db',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || '123456',  // ← 改为你设置的密码
+}</code></pre>
+<p>也可以通过环境变量覆盖（推荐）：</p>
+<pre><code>set DB_PASSWORD=你的密码
+set JWT_SECRET=你的密钥</code></pre>
+</div>
+
+<div class="card">
+<h3>3.6 启动服务</h3>
+<h4>开发模式（推荐）：</h4>
+<div class="step"><div class="step-num">1</div><div class="step-body">直接双击 <code>start.bat</code>，或命令行执行：<pre><code>cd E:\Desktop\工作汇报系统
+start.bat</code></pre></div></div>
+
+<h4>生产模式：</h4>
+<div class="step"><div class="step-num">1</div><div class="step-body">手动构建前端并启动后端：<pre><code>cd E:\Desktop\工作汇报系统\frontend
+npx vite build
+cd ..\backend
+node app.js</code></pre></div></div>
+
+<h4>验证服务：</h4>
+<p>浏览器访问 <code>http://localhost:8902</code>，应看到登录页面。</p>
+<p>API 健康检查：<code>http://localhost:8902/api/health</code> → 返回 <code>{"code":200,"msg":"OK"}</code></p>
+</div>
+
+<div class="card">
+<h3>3.7 默认登录账号</h3>
+<table>
+<tr><th>用户名</th><th>密码</th><th>角色</th></tr>
+<tr><td>admin</td><td>admin123</td><td>超级管理员</td></tr>
+</table>
+<p>其他用户密码统一为 <strong>123456</strong>（可通过用户管理页面自行修改）。</p>
+</div>
+
+<!-- ==================== 四、数据库配置 ==================== -->
+<h2>四、数据库配置说明</h2>
+
+<div class="card">
+<h3>4.1 数据库概览</h3>
+<table>
+<tr><th>配置项</th><th>值</th></tr>
+<tr><td>数据库类型</td><td>PostgreSQL 18</td></tr>
+<tr><td>数据库名称</td><td>work_report_db</td></tr>
+<tr><td>连接地址</td><td>127.0.0.1:5432</td></tr>
+<tr><td>超级用户</td><td>postgres</td></tr>
+<tr><td>超级用户密码</td><td>123456</td></tr>
+<tr><td>连接池大小</td><td>最大 20 连接</td></tr>
+<tr><td>初始化脚本</td><td>database/init.sql（UTF-8 编码）</td></tr>
+</table>
+
+<h3>4.2 表结构总览（9 张表）</h3>
+<table>
+<tr><th>#</th><th>表名</th><th>说明</th><th>核心字段</th></tr>
+<tr><td>1</td><td><code>sys_user</code></td><td>用户表</td><td>user_id, username, real_name, password(bcrypt), role_type(1/2/3), dept_id, is_delete</td></tr>
+<tr><td>2</td><td><code>department</code></td><td>部门表（树形）</td><td>dept_id, dept_name, parent_id(自引用), sort_order</td></tr>
+<tr><td>3</td><td><code>report_relation</code></td><td>汇报关系表</td><td>relation_id, reporter_id→receiver_id</td></tr>
+<tr><td>4</td><td><code>work_record</code></td><td>工作记录表</td><td>record_id, user_id, record_date, record_content, record_status(0草稿/1已提交), display_id(WR-0001)</td></tr>
+<tr><td>5</td><td><code>cycle_report</code></td><td>周期汇报表</td><td>report_id, user_id, receiver_id, report_type(1周/2月), cycle_start/end, report_status(0草稿/1已提交/2已退回/3已通过)</td></tr>
+<tr><td>6</td><td><code>report_record</code></td><td>汇报-记录关联表</td><td>report_id, record_id（多对多）</td></tr>
+<tr><td>7</td><td><code>audit_log</code></td><td>审批日志表</td><td>log_id, report_id, operator_id, action_type(1退回/2备注/3通过), action_comment</td></tr>
+<tr><td>8</td><td><code>notification</code></td><td>通知表</td><td>id, user_id, type(submit/approve/reject/comment), title, content, report_id, is_read</td></tr>
+<tr><td>9</td><td><code>ai_config</code></td><td>AI 配置表</td><td>config_id, config_key(UNIQUE), config_value, config_desc</td></tr>
+</table>
+
+<h3>4.3 关键索引</h3>
+<table>
+<tr><th>表名</th><th>索引名</th><th>作用</th></tr>
+<tr><td>work_record</td><td>idx_work_record_user_date</td><td>加速按用户+日期查询记录</td></tr>
+<tr><td>cycle_report</td><td>idx_cycle_report_user_status</td><td>加速按用户+状态查询汇报</td></tr>
+<tr><td>report_record</td><td>idx_report_record_report</td><td>加速按汇报ID查关联记录</td></tr>
+<tr><td>report_record</td><td>idx_report_record_record</td><td>加速按记录ID查关联汇报</td></tr>
+<tr><td>notification</td><td>idx_notification_user_read</td><td>加速按用户+已读状态查通知</td></tr>
+</table>
+
+<h3>4.4 数据备份与恢复</h3>
+<p><strong>备份：</strong></p>
+<pre><code>"F:\PostgreSQL\18\bin\pg_dump.exe" -U postgres -d work_report_db -f backup.sql</code></pre>
+<p><strong>恢复：</strong></p>
+<pre><code>"F:\PostgreSQL\18\bin\psql.exe" -U postgres -d work_report_db -f backup.sql</code></pre>
+</div>
+
+<!-- ==================== 五、运维管理 ==================== -->
+<h2>五、运维管理</h2>
+
+<div class="card">
+<h3>5.1 启动与停止</h3>
+<table>
+<tr><th>操作</th><th>方式</th></tr>
+<tr><td>启动服务</td><td>双击 <code>start.bat</code> 或 <code>start-prod.bat</code></td></tr>
+<tr><td>停止服务</td><td>双击 <code>stop.bat</code>（强制杀死所有 node 进程）</td></tr>
+<tr><td>检查运行状态</td><td>访问 <code>http://localhost:8902/api/health</code></td></tr>
+</table>
+
+<h3>5.2 防火墙配置（Windows）</h3>
+<p>其他电脑访问需要放行 8902 端口：</p>
+<pre><code>控制面板 → Windows Defender 防火墙 → 高级设置
+→ 入站规则 → 新建规则 → 端口 → TCP → 8902 → 允许连接</code></pre>
+
+<h3>5.3 日志查看</h3>
+<p>后端日志输出在控制台窗口。可通过 morgan 查看 HTTP 请求日志，格式为 <code>:method :url :status :response-time ms</code>。</p>
+
+<h3>5.4 常见问题</h3>
+<div class="warn"><strong>Q：启动报"端口被占用"？</strong><br>A：双击 <code>stop.bat</code> 杀死所有 node 进程后重试。或用 <code>netstat -ano | findstr :8902</code> 查看占用进程的 PID，手动结束。</div>
+<div class="warn"><strong>Q：数据库连接失败？</strong><br>A：确认 PostgreSQL 服务已启动（任务管理器 → 服务 → postgresql-x64-18），检查连接密码是否匹配。</div>
+<div class="warn"><strong>Q：前端页面空白/报错？</strong><br>A：运行 <code>cd frontend && npx vite build</code> 重新构建前端，然后重启后端。</div>
+<div class="warn"><strong>Q：其他同事无法访问？</strong><br>A：确保防火墙放行了 8902 端口；确认本机局域网 IP（<code>ipconfig</code>）；同事访问 <code>http://你的IP:8902</code>。</div>
+</div>
+
+<!-- ==================== 六、AI 配置 ==================== -->
+<h2>六、AI 功能配置</h2>
+
+<div class="card">
+<h3>6.1 配置方法</h3>
+<p>使用 admin 账号登录 → 侧边栏"AI 配置" → 填写：</p>
+<table>
+<tr><th>字段</th><th>说明</th><th>示例</th></tr>
+<tr><td>API 地址</td><td>AI 服务的完整 API URL</td><td><code>http://127.0.0.1:8080/v1/chat/completions</code></td></tr>
+<tr><td>模型名称</td><td>使用的模型</td><td><code>Qwen3-1.7B</code></td></tr>
+<tr><td>API 密钥</td><td>认证 Token（按需）</td><td><code>sk-lm-xxx:yyy</code></td></tr>
+<tr><td>系统提示词</td><td>AI 行为指令</td><td>"你是一个工作汇报助手..."</td></tr>
+</table>
+
+<h3>6.2 支持模型</h3>
+<ul>
+<li>OpenAI 兼容 API（包括智谱 GLM、DeepSeek、通义千问、Kimi 等国内模型）</li>
+<li>本地模型（LM Studio、Ollama 等本地推理服务）</li>
+<li>Qwen3 系列（自动适配思考模式）</li>
+</ul>
+
+<h3>6.3 注意事项</h3>
+<div class="info">Node.js 的 <code>fetch</code> 对 <code>localhost</code> 可能解析到 IPv6，建议使用 <code>127.0.0.1</code> 而非 <code>localhost</code>。</div>
+</div>
+
+<p style="text-align:center;color:#909399;margin-top:60px;border-top:1px solid #eee;padding-top:20px">
+慧报空间 · 部署文档 · 2026-05-27
+</p>
+
+</body>
+</html>

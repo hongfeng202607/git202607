@@ -1,0 +1,182 @@
+慧报空间 - 数据库配置说明
+===============================
+最后更新：2026-05-28
+===============================
+
+一、数据库基本信息
+-------------------
+  数据库管理系统：PostgreSQL 18
+  数据库名称：    work_report_db
+  监听端口：      5432
+  连接地址：      127.0.0.1（仅本地）
+  超级用户：      postgres
+  超级用户密码：  123456
+  字符编码：      UTF-8
+  数据目录：      F:\PostgreSQL\18\data\
+
+二、连接配置（backend/config/index.js）
+----------------------------------------
+  host:     '127.0.0.1'       (或环境变量 DB_HOST)
+  port:     5432               (或环境变量 DB_PORT)
+  database: 'work_report_db'  (或环境变量 DB_NAME)
+  user:     'postgres'        (或环境变量 DB_USER)
+  password: '123456'          (或环境变量 DB_PASSWORD)
+
+  连接池（backend/config/db.js）：
+    max: 20                     // 最大连接数
+    idleTimeoutMillis: 30000    // 空闲超时
+    connectionTimeoutMillis: 2000  // 连接超时
+
+三、初始化脚本
+---------------
+  文件：database/init.sql
+  编码：UTF-8（必须，否则中文乱码）
+  执行方式：
+    方式一（psql）：
+      "F:\PostgreSQL\18\bin\psql.exe" -U postgres -d work_report_db -f init.sql
+    
+    方式二（Node.js）：
+      const { Pool } = require('pg');
+      const fs = require('fs');
+      const pool = new Pool({...});
+      pool.query(fs.readFileSync('init.sql','utf8'));
+
+四、表结构详情（9 张表）
+--------------------------
+
+1. sys_user（用户表）
+   ├── user_id       BIGSERIAL PRIMARY KEY
+   ├── username      VARCHAR(50) NOT NULL UNIQUE
+   ├── real_name     VARCHAR(50) NOT NULL
+   ├── password      VARCHAR(100) NOT NULL          -- bcrypt 哈希
+   ├── role_type     SMALLINT NOT NULL               -- 1=员工 2=管理者 3=超管
+   ├── dept_id       BIGINT                          -- 关联部门(可选)
+   ├── email         VARCHAR(100)
+   ├── phone         VARCHAR(20)
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   ├── update_time   TIMESTAMP DEFAULT NOW()
+   ├── is_delete     SMALLINT DEFAULT 0              -- 软删除标记
+   初始数据：admin（密码 admin123）
+
+2. department（部门表，树形结构）
+   ├── dept_id       BIGSERIAL PRIMARY KEY
+   ├── dept_name     VARCHAR(100) NOT NULL
+   ├── parent_id     BIGINT REFERENCES department(dept_id)  -- 自引用树形
+   ├── sort_order    INT DEFAULT 0
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   初始数据：管理层、技术部、产品部、研发组、测试组、需求组、设计组
+
+3. report_relation（汇报关系表）
+   ├── relation_id   BIGSERIAL PRIMARY KEY
+   ├── reporter_id   BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── receiver_id   BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   说明：汇报人 → 接收人（一对多，一个上级可以有多个下属）
+
+4. work_record（工作记录表）
+   ├── record_id     BIGSERIAL PRIMARY KEY
+   ├── user_id       BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── record_date   DATE NOT NULL
+   ├── record_content TEXT NOT NULL
+   ├── record_status SMALLINT NOT NULL DEFAULT 0     -- 0=草稿 1=已提交
+   ├── display_id    VARCHAR(20)                     -- WR-0001 格式
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   ├── submit_time   TIMESTAMP
+   ├── update_time   TIMESTAMP DEFAULT NOW()
+   ├── is_delete     SMALLINT DEFAULT 0
+   索引：idx_work_record_user_date (user_id, record_date)
+
+5. cycle_report（周期汇报表）
+   ├── report_id     BIGSERIAL PRIMARY KEY
+   ├── user_id       BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── receiver_id   BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── report_type   SMALLINT NOT NULL               -- 1=周报 2=月报
+   ├── cycle_start   DATE NOT NULL
+   ├── cycle_end     DATE NOT NULL
+   ├── report_content TEXT NOT NULL
+   ├── generate_type SMALLINT DEFAULT 1              -- 1=手动 2=AI
+   ├── report_status SMALLINT DEFAULT 0              -- 0草稿 1已提交 2已退回 3已通过
+   ├── reject_reason TEXT
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   ├── submit_time   TIMESTAMP
+   ├── update_time   TIMESTAMP DEFAULT NOW()
+   ├── is_delete     SMALLINT DEFAULT 0
+   索引：idx_cycle_report_user_status (user_id, report_status)
+
+6. report_record（汇报-记录关联表）
+   ├── id            BIGSERIAL PRIMARY KEY
+   ├── report_id     BIGINT NOT NULL REFERENCES cycle_report(report_id)
+   ├── record_id     BIGINT NOT NULL REFERENCES work_record(record_id)
+   ├── created_at    TIMESTAMP DEFAULT NOW()
+   ├── UNIQUE (report_id, record_id)
+   索引：idx_report_record_report (report_id)
+         idx_report_record_record (record_id)
+   说明：多对多关联，一个汇报可引用多条工作记录
+
+7. audit_log（审批日志表）
+   ├── log_id        BIGSERIAL PRIMARY KEY
+   ├── report_id     BIGINT NOT NULL REFERENCES cycle_report(report_id)
+   ├── operator_id   BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── action_type   SMALLINT NOT NULL               -- 1=退回 2=备注 3=通过
+   ├── action_comment TEXT NOT NULL
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   说明：记录每次审批操作（退回/备注/通过）
+
+8. notification（通知表）
+   ├── id            BIGSERIAL PRIMARY KEY
+   ├── user_id       BIGINT NOT NULL REFERENCES sys_user(user_id)
+   ├── type          VARCHAR(50) NOT NULL            -- submit/approve/reject/comment
+   ├── title         VARCHAR(200) NOT NULL
+   ├── content       TEXT
+   ├── report_id     BIGINT                          -- 关联的汇报ID
+   ├── is_read       SMALLINT DEFAULT 0
+   ├── create_time   TIMESTAMP DEFAULT NOW()
+   索引：idx_notification_user_read (user_id, is_read)
+
+9. ai_config（AI 配置表）
+   ├── config_id     BIGSERIAL PRIMARY KEY
+   ├── config_key    VARCHAR(100) NOT NULL UNIQUE
+   ├── config_value  TEXT NOT NULL
+   ├── config_desc   VARCHAR(200)
+   ├── update_time   TIMESTAMP DEFAULT NOW()
+   初始数据：
+    - api_url:       （空，AI 接口地址）
+    - model_name:    （空，模型名称）
+    - api_key:       （空，API 密钥）
+    - system_prompt: 你是一个工作汇报助手...
+
+五、数据流关键查询
+-------------------
+
+1. 多级下属递归查询（用于审批穿透）：
+   WITH RECURSIVE sub_tree AS (
+     SELECT reporter_id AS user_id FROM report_relation WHERE receiver_id = $1
+     UNION
+     SELECT r.reporter_id FROM report_relation r JOIN sub_tree s ON r.receiver_id = s.user_id
+   )
+   SELECT user_id FROM sub_tree
+
+2. 工作记录锁定检查（判断记录是否被审批中的汇报引用）：
+   SELECT cr.report_status FROM report_record rr
+   JOIN cycle_report cr ON rr.report_id = cr.report_id
+   WHERE rr.record_id = $1 AND cr.is_delete = 0
+   AND cr.user_id = $2
+   AND cr.report_status = 1  -- 只锁审批中的
+
+3. 部门树形构建：
+   前端递归：buildTree(list, parentId) 函数
+   后端返回扁平列表，前端构建树
+
+六、数据清理
+-------------
+  清除业务数据（保留配置）：
+    DELETE FROM report_record;
+    DELETE FROM audit_log;
+    DELETE FROM notification;
+    DELETE FROM work_record;
+    DELETE FROM cycle_report;
+
+  完全备份：
+    pg_dump -U postgres -d work_report_db -f backup.sql
+
+===============================

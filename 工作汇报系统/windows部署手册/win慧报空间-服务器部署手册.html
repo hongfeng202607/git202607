@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慧报空间 - 服务器部署手册（Windows · 已归档）</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f5f6fa;color:#2d3436;line-height:1.7}
+/* 顶部导航 */
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:32px 0;text-align:center}
+.header h1{font-size:28px;font-weight:700;margin-bottom:6px}
+.header p{font-size:15px;color:rgba(255,255,255,.65)}
+.archived{background:#ffe58f;color:#ad6800;text-align:center;padding:8px 0;font-size:13px}
+/* 容器 */
+.container{max-width:960px;margin:0 auto;padding:32px 20px}
+/* 目录 */
+.toc{background:#fff;border-radius:10px;padding:24px 28px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:28px}
+.toc h2{font-size:18px;margin-bottom:14px;color:#1a1a2e}
+.toc ol{padding-left:20px}
+.toc li{margin-bottom:6px;font-size:14px}
+.toc a{color:#0f3460;text-decoration:none}
+.toc a:hover{text-decoration:underline}
+/* 卡片 */
+.card{background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:24px;overflow:hidden}
+.card-header{padding:16px 24px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px}
+.card-header .step{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:#0f3460;color:#fff;border-radius:50%;font-size:14px;font-weight:700;flex-shrink:0}
+.card-header h3{font-size:17px;font-weight:600;color:#1a1a2e}
+.card-body{padding:20px 24px}
+.card-body h4{font-size:14px;color:#0f3460;margin-top:18px;margin-bottom:8px}
+.card-body h4:first-child{margin-top:0}
+.card-body p{font-size:14px;color:#555;margin-bottom:10px}
+.card-body ul{padding-left:18px;margin-bottom:10px}
+.card-body li{font-size:14px;color:#555;margin-bottom:4px}
+.card-body li strong{color:#2d3436}
+/* 代码块 */
+.code-block{background:#1e1e2e;color:#cdd6f4;border-radius:8px;padding:16px 20px;margin:10px 0 16px;overflow-x:auto;font-family:"JetBrains Mono","Cascadia Code","Fira Code",Consolas,monospace;font-size:13px;line-height:1.6}
+.code-block .comment{color:#6c7086}
+.code-block .keyword{color:#cba6f7}
+.code-block .string{color:#a6e3a1}
+.code-block .func{color:#89b4fa}
+.code-block .path{color:#f9e2af}
+.code-block .prompt{color:#585b70}
+/* 内联代码 */
+.inline-code{background:#e8e8e8;color:#d6336c;padding:2px 7px;border-radius:4px;font-family:Consolas,monospace;font-size:13px}
+/* 提示框 */
+.tip{background:#e7f5ff;border-left:4px solid #409eff;padding:12px 16px;border-radius:6px;margin:12px 0;font-size:14px}
+.tip.warn{background:#fff7e6;border-left-color:#fa8c16}
+.tip.danger{background:#fff1f0;border-left-color:#f5222d}
+.tip strong{display:block;margin-bottom:4px;font-size:14px}
+/* 表格 */
+.tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+.tbl th{background:#f0f2f5;padding:8px 14px;text-align:left;font-weight:600;border-bottom:2px solid #e8e8e8;color:#555}
+.tbl td{padding:8px 14px;border-bottom:1px solid #f0f0f0}
+.tbl tr:hover td{background:#fafafa}
+/* 步骤标签 */
+.tag{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:600}
+.tag.ubuntu{background:#e95420;color:#fff}
+.tag.win{background:#0078d6;color:#fff}
+.tag.both{background:#6366f1;color:#fff}
+/* 进度条 */
+.progress{display:flex;margin-bottom:32px;gap:4px}
+.progress .dot{flex:1;height:6px;border-radius:3px;background:#e0e0e0}
+.progress .dot.active{background:#0f3460}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🖥️ 慧报空间 · 服务器部署手册</h1>
+  <p>从零开始 · 环境安装 → 数据库 → 应用部署 → 安全加固 · 全流程详细操作</p>
+</div>
+<div class="archived">📌 此文档已归档。生产环境已迁移至 Linux 部署，请参考 慧报空间-Linux部署手册.html</div>
+
+<div class="container">
+
+<!-- ===================== 目录 ===================== -->
+<div class="toc">
+  <h2>📋 目录</h2>
+  <ol>
+    <li><a href="#step1">服务器环境要求</a></li>
+    <li><a href="#step2">安装 Node.js</a></li>
+    <li><a href="#step3">安装 PostgreSQL &amp; 创建数据库</a></li>
+    <li><a href="#step4">上传代码 &amp; 安装依赖</a></li>
+    <li><a href="#step5">初始化数据库表结构</a></li>
+    <li><a href="#step6">配置环境变量 &amp; JWT 密钥</a></li>
+    <li><a href="#step7">构建前端</a></li>
+    <li><a href="#step8">启动 &amp; 验证</a></li>
+    <li><a href="#step9">PM2 守护进程</a></li>
+    <li><a href="#step10">Nginx 反向代理 &amp; HTTPS</a></li>
+    <li><a href="#step11">安全加固清单</a></li>
+    <li><a href="#step12">日常运维</a></li>
+    <li><a href="#appendix">附录：完整脚本一键部署</a></li>
+  </ol>
+</div>
+
+<!-- ===================== 进度条 ===================== -->
+<div class="progress">
+  <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 1 -->
+<!-- ================================================================ -->
+<div class="card" id="step1">
+  <div class="card-header"><span class="step">1</span><h3>服务器环境要求</h3></div>
+  <div class="card-body">
+
+    <h4>推荐配置</h4>
+    <table class="tbl">
+      <tr><th>项目</th><th>最低配置</th><th>推荐配置</th></tr>
+      <tr><td>操作系统</td><td>Ubuntu 20.04 / CentOS 7</td><td><strong>Ubuntu 22.04 LTS</strong></td></tr>
+      <tr><td>CPU</td><td>2 核</td><td>4 核</td></tr>
+      <tr><td>内存</td><td>4 GB</td><td>8 GB</td></tr>
+      <tr><td>磁盘</td><td>20 GB</td><td>50 GB（SSD）</td></tr>
+      <tr><td>Node.js</td><td>18.x</td><td><strong>22.x LTS</strong></td></tr>
+      <tr><td>PostgreSQL</td><td>14.x</td><td><strong>16.x</strong></td></tr>
+    </table>
+
+    <h4>端口规划</h4>
+    <table class="tbl">
+      <tr><th>端口</th><th>用途</th><th>对内/对外</th></tr>
+      <tr><td>443</td><td>HTTPS（用户访问）</td><td>对外</td></tr>
+      <tr><td>80</td><td>HTTP（自动跳转 HTTPS）</td><td>对外</td></tr>
+      <tr><td>22</td><td>SSH（远程登录）</td><td>对外</td></tr>
+      <tr><td>5432</td><td>PostgreSQL</td><td>仅本地（127.0.0.1）</td></tr>
+      <tr><td>8902</td><td>慧报空间后端</td><td>仅本地（127.0.0.1）</td></tr>
+    </table>
+
+    <div class="tip warn">
+      <strong>⚠️ 重要原则</strong>
+      后端 8902 端口和数据库 5432 端口<strong>绝不能暴露到公网</strong>，只监听 127.0.0.1。
+      用户通过 443 端口（HTTPS）访问，经 Nginx 转发到后端。
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 2 -->
+<!-- ================================================================ -->
+<div class="card" id="step2">
+  <div class="card-header"><span class="step">2</span><h3>安装 Node.js 22 LTS</h3></div>
+  <div class="card-body">
+
+    <p>以下以 <strong>Ubuntu 22.04</strong> 为例。CentOS / Windows Server 命令见附录。</p>
+
+    <div class="code-block">
+      <span class="comment"># 更新包管理器</span>
+      sudo apt update && sudo apt upgrade -y
+
+      <span class="comment"># 安装 curl（如果没有）</span>
+      sudo apt install -y curl
+
+      <span class="comment"># 添加 NodeSource 仓库并安装 Node.js 22 LTS</span>
+      curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+      sudo apt install -y nodejs
+
+      <span class="comment"># 验证版本</span>
+      node -v   <span class="comment"># 应显示 v22.x</span>
+      npm -v    <span class="comment"># 应显示 10.x</span>
+    </div>
+
+    <div class="tip">
+      <strong>📌 验证方法</strong>
+      如果 <span class="inline-code">node -v</span> 显示版本号，则安装成功。
+    </div>
+
+    <h4>安装 PM2（进程管理工具）</h4>
+    <div class="code-block">
+      sudo npm install -g pm2
+      pm2 -v   <span class="comment"># 应显示 5.x</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 3 -->
+<!-- ================================================================ -->
+<div class="card" id="step3">
+  <div class="card-header"><span class="step">3</span><h3>安装 PostgreSQL &amp; 创建数据库</h3></div>
+  <div class="card-body">
+
+    <h4>3.1 安装 PostgreSQL 16</h4>
+    <div class="code-block">
+      <span class="comment"># 安装 PostgreSQL 16</span>
+      sudo apt install -y postgresql-16
+
+      <span class="comment"># 确认安装成功</span>
+      psql --version   <span class="comment"># 应显示 psql (PostgreSQL) 16.x</span>
+      
+      <span class="comment"># 查看服务状态</span>
+      sudo systemctl status postgresql
+      <span class="comment"># 应显示 active (running)</span>
+    </div>
+
+    <div class="tip warn">
+      <strong>⚠️ 如果 postgresql-16 找不到</strong>
+      Ubuntu 22.04 默认源可能只有 14 版本。<br>
+      改用 <span class="inline-code">sudo apt install postgresql</span>（会安装默认版本）即可。
+    </div>
+
+    <h4>3.2 设置数据库密码</h4>
+    <div class="code-block">
+      <span class="comment"># 切换到 postgres 系统用户</span>
+      sudo -i -u postgres
+
+      <span class="comment"># 进入 psql 命令行</span>
+      psql
+
+      <span class="comment"># 设置 postgres 用户密码（替换 YourStrongPassword! 为你的密码）</span>
+      ALTER USER postgres WITH PASSWORD 'YourStrongPassword!';
+
+      <span class="comment"># 退出 psql</span>
+      \q
+
+      <span class="comment"># 退出 postgres 用户</span>
+      exit
+    </div>
+
+    <div class="tip danger">
+      <strong>🔐 重要</strong>
+      生产环境<strong>绝对不能</strong>使用默认密码 <span class="inline-code">123456</span>！
+      建议用 <span class="inline-code">openssl rand -base64 16</span> 生成随机密码。
+    </div>
+
+    <h4>3.3 创建数据库和专用用户</h4>
+    <p>建议不要直接用 <span class="inline-code">postgres</span> 超级用户连接应用，而是创建一个专用用户：</p>
+
+    <div class="code-block">
+      sudo -i -u postgres psql
+
+      <span class="comment">-- 创建数据库</span>
+      CREATE DATABASE work_report_db;
+
+      <span class="comment">-- 创建专用用户（密码替换为你的强密码）</span>
+      CREATE USER huibao_user WITH PASSWORD 'HuibaoPass123!';
+
+      <span class="comment">-- 授予权限</span>
+      GRANT ALL PRIVILEGES ON DATABASE work_report_db TO huibao_user;
+
+      <span class="comment">-- 退出</span>
+      \q
+      exit
+    </div>
+
+    <div class="tip">
+      <strong>📌 后续配置时</strong>
+      在环境变量中设置：<span class="inline-code">DB_USER=huibao_user</span> 和 <span class="inline-code">DB_PASSWORD=HuibaoPass123!</span>
+    </div>
+
+    <h4>3.4 配置 PostgreSQL 仅监听本地</h4>
+    <div class="code-block">
+      <span class="comment"># 编辑配置文件</span>
+      sudo vim /etc/postgresql/16/main/postgresql.conf
+
+      <span class="comment"># 找到并修改 listen_addresses</span>
+      listen_addresses = 'localhost'   <span class="comment"># 只监听本地，不暴露到公网</span>
+
+      <span class="comment"># 重启生效</span>
+      sudo systemctl restart postgresql
+    </div>
+
+    <div class="tip danger">
+      <strong>⚠️ 安全红线</strong>
+      如果 <span class="inline-code">listen_addresses = '*'</span>，数据库会暴露在公网，<strong>极其危险</strong>！
+      一定要改成 <span class="inline-code">'localhost'</span> 或 <span class="inline-code">'127.0.0.1'</span>。
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 4 -->
+<!-- ================================================================ -->
+<div class="card" id="step4">
+  <div class="card-header"><span class="step">4</span><h3>上传代码 &amp; 安装依赖</h3></div>
+  <div class="card-body">
+
+    <h4>4.1 将代码传到服务器</h4>
+    <p>方式一：从本机拷贝（推荐第一次部署用）</p>
+    <div class="code-block">
+      <span class="comment"># 在本地打包（Windows 上用 Git Bash 或 PowerShell）</span>
+      cd E:\Desktop\工作汇报系统
+      tar -czf huibao.tar.gz --exclude=node_modules --exclude=frontend/node_modules --exclude=frontend/dist --exclude=backend/backup .
+      
+      <span class="comment"># 上传到服务器（替换为你的服务器 IP）</span>
+      scp huibao.tar.gz root@你的服务器IP:/opt/
+      
+      <span class="comment"># 在服务器上解压</span>
+      ssh root@你的服务器IP
+      cd /opt
+      tar -xzf huibao.tar.gz -C /opt/huibao
+    </div>
+
+    <p>方式二：从 Git 仓库拉取（推荐后续更新用）</p>
+    <div class="code-block">
+      <span class="comment"># 先在本地把代码推送到 Git 仓库（ GitHub / Gitee / 自建 Git ）</span>
+      
+      <span class="comment"># 在服务器上拉取</span>
+      cd /opt
+      git clone https://github.com/你的仓库/huibao-space.git huibao
+      <span class="comment"># 如果用 SSH 方式：git clone git@github.com:你的仓库/huibao-space.git huibao</span>
+    </div>
+
+    <h4>4.2 安装后端依赖</h4>
+    <div class="code-block">
+      cd /opt/huibao/backend
+      npm install --production
+      <span class="comment"># 安装完成后，node_modules 目录大约 8MB</span>
+    </div>
+
+    <h4>4.3 安装前端依赖（仅构建时需要）</h4>
+    <div class="code-block">
+      cd /opt/huibao/frontend
+      npm install
+      <span class="comment"># 前端依赖较大，约 200MB，但构建后可以删除 node_modules</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 5 -->
+<!-- ================================================================ -->
+<div class="card" id="step5">
+  <div class="card-header"><span class="step">5</span><h3>初始化数据库表结构</h3></div>
+  <div class="card-body">
+
+    <h4>5.1 导入表结构</h4>
+    <div class="code-block">
+      <span class="comment"># 方式一：直接用 psql 导入 init.sql</span>
+      sudo -u postgres psql -d work_report_db -f /opt/huibao/database/init.sql
+
+      <span class="comment"># 方式二：如果用专用用户 huibao_user</span>
+      PGPASSWORD='HuibaoPass123!' psql -h 127.0.0.1 -U huibao_user -d work_report_db -f /opt/huibao/database/init.sql
+    </div>
+
+    <h4>5.2 验证表结构</h4>
+    <div class="code-block">
+      <span class="comment"># 连接到数据库查看</span>
+      sudo -u postgres psql -d work_report_db
+
+      <span class="comment"># 列出所有表</span>
+      \dt
+      <span class="comment"># 应看到 9 张表：
+      # ai_config, audit_log, cycle_report, department,
+      # notification, report_record, report_relation,
+      # sys_user, work_record</span>
+
+      <span class="comment"># 查看表结构示例</span>
+      \d sys_user
+
+      <span class="comment"># 退出</span>
+      \q
+    </div>
+
+    <h4>5.3 导入已有的配置数据</h4>
+    <p>如果你有备份数据或演示数据需要导入：</p>
+    <div class="code-block">
+      <span class="comment"># 导入备份数据</span>
+      PGPASSWORD='你的密码' psql -h 127.0.0.1 -U huibao_user -d work_report_db -f /opt/huibao/backend/backup/备份文件名.sql
+
+      <span class="comment"># 或初始化演示数据</span>
+      cd /opt/huibao/backend && node init-demo-data.js
+    </div>
+
+    <div class="tip">
+      <strong>📌 初始化后默认账号</strong><br>
+      管理员：<span class="inline-code">admin / admin123</span><br>
+      其他用户：<span class="inline-code">用户名 / 123456</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 6 -->
+<!-- ================================================================ -->
+<div class="card" id="step6">
+  <div class="card-header"><span class="step">6</span><h3>配置环境变量 &amp; JWT 密钥</h3></div>
+  <div class="card-body">
+
+    <h4>6.1 生成 JWT 密钥</h4>
+    <div class="code-block">
+      <span class="comment"># 生成一个 64 字符的随机密钥</span>
+      openssl rand -hex 32 | tee /opt/huibao/backend/jwt-secret.txt
+      <span class="comment"># 输出类似：a1b2c3d4e5f6...（共 64 个十六进制字符）</span>
+    </div>
+
+    <h4>6.2 创建环境变量脚本</h4>
+    <p>创建 <span class="inline-code">/opt/huibao/backend/.env.sh</span>，写入以下内容：</p>
+
+    <div class="code-block">
+<span class="comment">#!/bin/bash
+# 慧报空间 - 环境变量配置
+# 在启动前 source 此文件：source .env.sh</span>
+
+<span class="keyword">export</span> PORT=<span class="string">8902</span>
+
+<span class="comment"># --- 数据库配置（按实际修改） ---</span>
+<span class="keyword">export</span> DB_HOST=<span class="string">127.0.0.1</span>
+<span class="keyword">export</span> DB_PORT=<span class="string">5432</span>
+<span class="keyword">export</span> DB_NAME=<span class="string">work_report_db</span>
+<span class="keyword">export</span> DB_USER=<span class="string">huibao_user</span>
+<span class="keyword">export</span> DB_PASSWORD=<span class="string">你的强密码</span>
+
+<span class="comment"># --- JWT (如果设置了环境变量，会优先使用，否则读 jwt-secret.txt) ---</span>
+<span class="comment"># export JWT_SECRET=你的64位随机字符串</span>
+    </div>
+
+    <div class="code-block">
+      <span class="comment"># 设置权限</span>
+      chmod 600 /opt/huibao/backend/.env.sh
+    </div>
+
+    <h4>6.3 一次性设置（推荐直接用 systemd 或 PM2 的 env 配置）</h4>
+    <p>实际上最简单的方式是用 PM2 的 ecosystem 文件来管理环境变量，见步骤 9。</p>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 7 -->
+<!-- ================================================================ -->
+<div class="card" id="step7">
+  <div class="card-header"><span class="step">7</span><h3>构建前端</h3></div>
+  <div class="card-body">
+
+    <div class="code-block">
+      <span class="comment"># 进入前端目录</span>
+      cd /opt/huibao/frontend
+
+      <span class="comment"># 构建（如果步骤4已经 npm install 过）</span>
+      npx vite build
+
+      <span class="comment"># 构建成功后，产物在 frontend/dist/ 目录</span>
+      ls -la dist/
+      <span class="comment"># 应看到 index.html, assets/ 等文件</span>
+    </div>
+
+    <div class="tip">
+      <strong>📌 构建耗时</strong>
+      首次构建约 10~20 秒，后续增量构建约 2~3 秒。
+    </div>
+
+    <h4>构建后清理（可选，节省磁盘）</h4>
+    <div class="code-block">
+      <span class="comment"># 前端依赖只在构建时需要，构建后可以删除</span>
+      rm -rf /opt/huibao/frontend/node_modules
+      <span class="comment"># 可释放约 200MB 磁盘空间</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 8 -->
+<!-- ================================================================ -->
+<div class="card" id="step8">
+  <div class="card-header"><span class="step">8</span><h3>启动 &amp; 验证</h3></div>
+  <div class="card-body">
+
+    <h4>8.1 首次启动测试</h4>
+    <div class="code-block">
+      <span class="comment"># 加载环境变量</span>
+      <span class="keyword">source</span> /opt/huibao/backend/.env.sh
+
+      <span class="comment"># 启动</span>
+      cd /opt/huibao/backend
+      node app.js
+
+      <span class="comment"># 看到输出：</span>
+      <span class="comment"># Frontend dist loaded: /opt/huibao/frontend/dist</span>
+      <span class="comment"># Work Report backend started on port 8902</span>
+    </div>
+
+    <h4>8.2 验证服务</h4>
+    <p>新开一个终端连接服务器，执行：</p>
+    <div class="code-block">
+      <span class="comment"># 1. 健康检查</span>
+      curl http://127.0.0.1:8902/api/health
+      <span class="comment"># 应返回：{"code":200,"msg":"OK","time":"..."}</span>
+
+      <span class="comment"># 2. 前端页面</span>
+      curl http://127.0.0.1:8902
+      <span class="comment"># 应返回 HTML 内容（慧报空间的登录页）</span>
+
+      <span class="comment"># 3. API 登录测试</span>
+      curl -s http://127.0.0.1:8902/api/auth/login \
+        -H "Content-Type: application/json" \
+        -d '{"username":"admin","password":"admin123"}'
+      <span class="comment"># 应返回包含 token 的 JSON</span>
+    </div>
+
+    <div class="tip danger">
+      <strong>⚠️ 注意</strong>
+      现在后端是直接 <span class="inline-code">node app.js</span> 运行的，关闭终端后服务就停了。
+      必须用 PM2 做守护进程（下一步）。
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 9 -->
+<!-- ================================================================ -->
+<div class="card" id="step9">
+  <div class="card-header"><span class="step">9</span><h3>PM2 守护进程</h3></div>
+  <div class="card-body">
+
+    <h4>9.1 创建 PM2 配置文件</h4>
+    <p>创建 <span class="inline-code">/opt/huibao/backend/ecosystem.config.js</span>：</p>
+
+    <div class="code-block">
+module.exports = {
+  apps: [{
+    name: 'huibao',
+    script: 'app.js',
+    cwd: '/opt/huibao/backend',
+    
+    <span class="comment">// 环境变量（修改为你的实际值）</span>
+    env: {
+      NODE_ENV: 'production',
+      PORT: 8902,
+      DB_HOST: '127.0.0.1',
+      DB_PORT: 5432,
+      DB_NAME: 'work_report_db',
+      DB_USER: 'huibao_user',
+      DB_PASSWORD: '你的强密码',
+    },
+    
+    <span class="comment">// 日志</span>
+    error_file: '/var/log/huibao/error.log',
+    out_file: '/var/log/huibao/out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    
+    <span class="comment">// 自动重启</span>
+    max_restarts: 10,
+    restart_delay: 3000,
+    
+    <span class="comment">// 内存限制（超过自动重启）</span>
+    max_memory_restart: '500M',
+  }]
+};
+    </div>
+
+    <div class="code-block">
+      <span class="comment"># 创建日志目录</span>
+      sudo mkdir -p /var/log/huibao
+      sudo chown -R $(whoami) /var/log/huibao
+    </div>
+
+    <h4>9.2 启动 &amp; 设置开机自启</h4>
+    <div class="code-block">
+      <span class="comment"># 启动</span>
+      cd /opt/huibao/backend
+      pm2 start ecosystem.config.js
+
+      <span class="comment"># 保存进程列表（重启服务器后恢复）</span>
+      pm2 save
+
+      <span class="comment"># 设置开机自启</span>
+      pm2 startup
+      <span class="comment"># 会输出一行 sudo 命令，复制执行即可</span>
+    </div>
+
+    <h4>9.3 PM2 常用命令</h4>
+    <table class="tbl">
+      <tr><th>命令</th><th>说明</th></tr>
+      <tr><td><span class="inline-code">pm2 status</span></td><td>查看所有进程状态</td></tr>
+      <tr><td><span class="inline-code">pm2 logs huibao</span></td><td>查看实时日志（Ctrl+C 退出）</td></tr>
+      <tr><td><span class="inline-code">pm2 restart huibao</span></td><td>重启</td></tr>
+      <tr><td><span class="inline-code">pm2 stop huibao</span></td><td>停止</td></tr>
+      <tr><td><span class="inline-code">pm2 delete huibao</span></td><td>删除进程</td></tr>
+      <tr><td><span class="inline-code">pm2 monit</span></td><td>监控面板（CPU/内存/请求）</td></tr>
+    </table>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 10 -->
+<!-- ================================================================ -->
+<div class="card" id="step10">
+  <div class="card-header"><span class="step">10</span><h3>Nginx 反向代理 &amp; HTTPS</h3></div>
+  <div class="card-body">
+
+    <h4>10.1 安装 Nginx</h4>
+    <div class="code-block">
+      sudo apt install -y nginx
+      sudo systemctl start nginx
+      sudo systemctl enable nginx
+    </div>
+
+    <h4>10.2 配置反向代理</h4>
+    <p>创建 <span class="inline-code">/etc/nginx/sites-available/huibao</span>：</p>
+
+    <div class="code-block">
+server {
+    <span class="comment"># 监听 80 端口（HTTP）</span>
+    listen 80;
+    server_name huibao.yourcompany.com;  <span class="comment"># 改为你的域名</span>
+
+    <span class="comment"># 后端 API 转发</span>
+    location /api/ {
+        proxy_pass http://127.0.0.1:8902;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        
+        <span class="comment"># 超时设置</span>
+        proxy_connect_timeout 30s;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+
+    <span class="comment"># 前端静态文件和 SPA 路由</span>
+    location / {
+        proxy_pass http://127.0.0.1:8902;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+}
+    </div>
+
+    <div class="code-block">
+      <span class="comment"># 启用站点</span>
+      sudo ln -s /etc/nginx/sites-available/huibao /etc/nginx/sites-enabled/
+      
+      <span class="comment"># 测试配置是否正确</span>
+      sudo nginx -t
+      
+      <span class="comment"># 重新加载 Nginx</span>
+      sudo systemctl reload nginx
+    </div>
+
+    <h4>10.3 配置 HTTPS（使用 Let's Encrypt 免费证书）</h4>
+    <div class="code-block">
+      <span class="comment"># 安装 Certbot</span>
+      sudo apt install -y certbot python3-certbot-nginx
+
+      <span class="comment"># 自动获取证书并配置 HTTPS</span>
+      sudo certbot --nginx -d huibao.yourcompany.com
+      <span class="comment"># 按照提示输入邮箱、同意协议即可</span>
+      
+      <span class="comment"># Certbot 会自动修改 Nginx 配置，添加 SSL 相关指令</span>
+      <span class="comment"># 并设置定时续期（证书有效期90天，自动续期）</span>
+      
+      <span class="comment"># 测试自动续期是否正常工作</span>
+      sudo certbot renew --dry-run
+    </div>
+
+    <h4>10.4 最终 Nginx 配置效果</h4>
+    <p>Certbot 配置完成后，你的 Nginx 配置会自动变成类似这样：</p>
+    <div class="code-block">
+server {
+    listen 443 ssl;
+    server_name huibao.yourcompany.com;
+
+    ssl_certificate /etc/letsencrypt/live/huibao.yourcompany.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/huibao.yourcompany.com/privkey.pem;
+    <span class="comment"># ... SSL 配置 ...</span>
+
+    location /api/ { proxy_pass http://127.0.0.1:8902; ... }
+    location / { proxy_pass http://127.0.0.1:8902; ... }
+}
+
+server {
+    listen 80;
+    server_name huibao.yourcompany.com;
+    return 301 https://\$host\$request_uri;  <span class="comment"># 自动跳转 HTTPS</span>
+}
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 11 -->
+<!-- ================================================================ -->
+<div class="card" id="step11">
+  <div class="card-header"><span class="step">11</span><h3>安全加固清单</h3></div>
+  <div class="card-body">
+
+    <div class="tip danger">
+      <strong>⚠️ 以下每一项都必须做，缺一不可</strong>
+    </div>
+
+    <table class="tbl">
+      <tr><th style="width:40px">#</th><th>检查项</th><th>操作</th><th>状态</th></tr>
+      <tr>
+        <td>1</td>
+        <td><strong>数据库密码</strong></td>
+        <td>已改为强密码，非默认 <span class="inline-code">123456</span></td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>JWT 密钥</strong></td>
+        <td>删掉默认 <span class="inline-code">jwt-secret.txt</span>，用环境变量 <span class="inline-code">JWT_SECRET</span></td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>数据库监听地址</strong></td>
+        <td><span class="inline-code">listen_addresses = 'localhost'</span>，不暴露公网</td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>防火墙</strong></td>
+        <td>只开放 22(SSH)、80(HTTP)、443(HTTPS)</td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>HTTPS</strong></td>
+        <td>通过 Certbot 配置 Let's Encrypt 证书</td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>创建专用数据库用户</strong></td>
+        <td>不使用 <span class="inline-code">postgres</span> 超级用户连接应用</td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>定时备份数据库</strong></td>
+        <td>配置 crontab 每天凌晨自动备份</td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>系统更新</strong></td>
+        <td><span class="inline-code">sudo apt update && sudo apt upgrade -y</span></td>
+        <td>☐</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><strong>SSH 密钥登录</strong></td>
+        <td>禁用密码登录，仅允许密钥登录</td>
+        <td>☐</td>
+      </tr>
+    </table>
+
+    <h4>防火墙配置（UFW）</h4>
+    <div class="code-block">
+      <span class="comment"># 安装 UFW</span>
+      sudo apt install -y ufw
+
+      <span class="comment"># 设置默认规则</span>
+      sudo ufw default deny incoming
+      sudo ufw default allow outgoing
+
+      <span class="comment"># 开放必要端口</span>
+      sudo ufw allow 22/tcp    <span class="comment"># SSH</span>
+      sudo ufw allow 80/tcp    <span class="comment"># HTTP</span>
+      sudo ufw allow 443/tcp   <span class="comment"># HTTPS</span>
+
+      <span class="comment"># 启用防火墙</span>
+      sudo ufw enable
+
+      <span class="comment"># 查看状态</span>
+      sudo ufw status
+    </div>
+
+    <h4>定时备份（crontab）</h4>
+    <div class="code-block">
+      <span class="comment"># 编辑 crontab</span>
+      crontab -e
+
+      <span class="comment"># 添加以下行（每天凌晨3点备份）</span>
+      0 3 * * * PGPASSWORD='你的密码' pg_dump -h 127.0.0.1 -U huibao_user -d work_report_db --no-owner > /backup/huibao_$(date +\%Y\%m\%d).sql 2>> /backup/backup.log
+
+      <span class="comment"># 保留最近30天的备份，删除更早的</span>
+      0 4 * * * find /backup -name "huibao_*.sql" -mtime +30 -delete
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- STEP 12 -->
+<!-- ================================================================ -->
+<div class="card" id="step12">
+  <div class="card-header"><span class="step">12</span><h3>日常运维</h3></div>
+  <div class="card-body">
+
+    <h4>更新代码</h4>
+    <div class="code-block">
+      <span class="comment"># 方式一：从 Git 拉取最新代码</span>
+      cd /opt/huibao
+      git pull
+
+      <span class="comment"># 方式二：重新上传代码包</span>
+      <span class="comment"># 本地重新打包上传</span>
+
+      <span class="comment"># 重新构建前端</span>
+      cd /opt/huibao/frontend && npx vite build
+
+      <span class="comment"># 重启后端</span>
+      pm2 restart huibao
+    </div>
+
+    <h4>查看日志</h4>
+    <div class="code-block">
+      <span class="comment"># 实时日志</span>
+      pm2 logs huibao
+
+      <span class="comment"># 查看最近的错误</span>
+      tail -n 50 /var/log/huibao/error.log
+
+      <span class="comment"># PM2 监控面板</span>
+      pm2 monit
+    </div>
+
+    <h4>数据库维护</h4>
+    <div class="code-block">
+      <span class="comment"># 手动备份</span>
+      PGPASSWORD='你的密码' pg_dump -h 127.0.0.1 -U huibao_user -d work_report_db --no-owner > /backup/huibao_manual_$(date +%Y%m%d).sql
+
+      <span class="comment"># 恢复备份</span>
+      PGPASSWORD='你的密码' psql -h 127.0.0.1 -U huibao_user -d work_report_db < /backup/huibao_20260527.sql
+    </div>
+
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- APPENDIX -->
+<!-- ================================================================ -->
+<div class="card" id="appendix">
+  <div class="card-header"><span class="step">📦</span><h3>附录：一键部署脚本</h3></div>
+  <div class="card-body">
+
+    <p>以下脚本包含了上面所有步骤，在全新 Ubuntu 22.04 服务器上直接执行即可完成部署：</p>
+
+    <div class="code-block">
+<span class="comment">#!/bin/bash
+# 慧报空间 - 一键部署脚本（Ubuntu 22.04）
+# 用法：chmod +x deploy.sh && sudo ./deploy.sh
+# 注意：执行前先将代码上传到 /opt/huibao</span>
+
+set -e
+
+DB_PASSWORD=<span class="string">"YourStrongPassword123!"</span>
+JWT_SECRET=$(openssl rand -hex 32)
+DOMAIN=<span class="string">"huibao.yourcompany.com"</span>  <span class="comment"># 改为你的域名</span>
+
+echo <span class="string">"=== 1. 安装 Node.js 22 ==="</span>
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs
+npm install -g pm2
+
+echo <span class="string">"=== 2. 安装 PostgreSQL ==="</span>
+apt install -y postgresql
+systemctl start postgresql
+systemctl enable postgresql
+
+echo <span class="string">"=== 3. 创建数据库和用户 ==="</span>
+sudo -u postgres psql &lt;&lt;EOF
+CREATE DATABASE work_report_db;
+CREATE USER huibao_user WITH PASSWORD '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON DATABASE work_report_db TO huibao_user;
+\c work_report_db
+GRANT ALL ON ALL TABLES IN SCHEMA public TO huibao_user;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO huibao_user;
+EOF
+
+echo <span class="string">"=== 4. 配置仅监听本地 ==="</span>
+sed -i <span class="string">"s/^listen_addresses = '.*'/listen_addresses = 'localhost'/"</span> /etc/postgresql/*/main/postgresql.conf
+systemctl restart postgresql
+
+echo <span class="string">"=== 5. 导入表结构 ==="</span>
+PGPASSWORD=${DB_PASSWORD} psql -h 127.0.0.1 -U huibao_user -d work_report_db -f /opt/huibao/database/init.sql
+
+echo <span class="string">"=== 6. 安装后端依赖 ==="</span>
+cd /opt/huibao/backend
+npm install --production
+
+echo <span class="string">"=== 7. 配置 JWT 密钥 ==="</span>
+echo -n <span class="string">"$JWT_SECRET"</span> &gt; /opt/huibao/backend/jwt-secret.txt
+
+echo <span class="string">"=== 8. 构建前端 ==="</span>
+cd /opt/huibao/frontend
+npm install
+npx vite build
+rm -rf node_modules
+
+echo <span class="string">"=== 9. 启动服务 ==="</span>
+cd /opt/huibao/backend
+cat &gt; ecosystem.config.js &lt;&lt;EOF
+module.exports = {
+  apps: [{
+    name: 'huibao',
+    script: 'app.js',
+    env: {
+      PORT: 8902,
+      DB_HOST: '127.0.0.1',
+      DB_PORT: 5432,
+      DB_NAME: 'work_report_db',
+      DB_USER: 'huibao_user',
+      DB_PASSWORD: '${DB_PASSWORD}',
+    },
+    max_memory_restart: '500M',
+  }]
+};
+EOF
+pm2 start ecosystem.config.js
+pm2 save
+pm2 startup
+
+echo <span class="string">"=== 10. 安装 Nginx ==="</span>
+apt install -y nginx
+cat &gt; /etc/nginx/sites-available/huibao &lt;&lt;'EOF'
+server {
+    listen 80;
+    server_name _;
+    location /api/ { proxy_pass http://127.0.0.1:8902; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; }
+    location / { proxy_pass http://127.0.0.1:8902; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; }
+}
+EOF
+ln -sf /etc/nginx/sites-available/huibao /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+
+echo <span class="string">""</span>
+echo <span class="string">"============================================"</span>
+echo <span class="string">"  部署完成！"</span>
+echo <span class="string">"  访问：http://服务器IP"</span>
+echo <span class="string">"  登录：admin / admin123"</span>
+echo <span class="string">"  数据库密码：${DB_PASSWORD}"</span>
+echo <span class="string">"  JWT密钥已保存到 jwt-secret.txt"</span>
+echo <span class="string">"============================================"</span>
+echo <span class="string">""</span>
+echo <span class="string">"  后续操作："</span>
+echo <span class="string">"  1. 配置域名：修改 /etc/nginx/sites-available/huibao 中的 server_name"</span>
+echo <span class="string">"  2. 配置 HTTPS：sudo certbot --nginx"</span>
+echo <span class="string">"  3. 配置防火墙：sudo ufw allow 22,80,443/tcp && sudo ufw enable"</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== Footer ===================== -->
+<div style="text-align:center;padding:40px 0 20px;color:#999;font-size:13px">
+  <p>慧报空间 · 部署手册 | 最后更新：2026-05-28</p>
+</div>
+
+</div>
+</body>
+</html>

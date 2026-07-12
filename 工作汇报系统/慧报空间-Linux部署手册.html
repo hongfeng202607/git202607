@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慧报空间 - Linux 部署手册</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#0d1117;color:#e6edf3;line-height:1.7}
+.header{border-bottom:1px solid #30363d;padding:28px 0;text-align:center;background:#161b22}
+.header h1{font-size:24px;color:#58a6ff}
+.header p{font-size:14px;color:#8b949e;margin-top:4px}
+.header .tag{display:inline-block;background:#238636;color:#fff;padding:2px 12px;border-radius:12px;font-size:12px;margin-top:8px}
+.container{max-width:920px;margin:0 auto;padding:24px 20px}
+.toc{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:18px 22px;margin-bottom:20px}
+.toc h2{font-size:15px;color:#58a6ff;margin-bottom:10px}
+.toc ol{padding-left:16px}
+.toc li{margin-bottom:4px;font-size:13px}
+.toc a{color:#58a6ff;text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:18px;overflow:hidden}
+.card-h{padding:12px 18px;border-bottom:1px solid #30363d;display:flex;align-items:center;gap:10px}
+.card-h .n{display:inline-flex;width:26px;height:26px;background:#1f6feb;color:#fff;border-radius:50%;font-size:12px;font-weight:700;align-items:center;justify-content:center;flex-shrink:0}
+.card-h h3{font-size:14px}
+.card-b{padding:14px 18px}
+.card-b p{font-size:13px;color:#c9d1d9;margin-bottom:7px}
+.card-b h4{font-size:13px;color:#58a6ff;margin-top:12px;margin-bottom:5px}
+.card-b h4:first-child{margin-top:0}
+pre{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px 14px;margin:7px 0 12px;overflow-x:auto;font-family:"JetBrains Mono","Fira Code",Consolas,monospace;font-size:12px;line-height:1.55}
+pre .c{color:#8b949e;font-style:italic}
+pre .k{color:#ff7b72}
+pre .s{color:#a5d6ff}
+pre .ok{color:#3fb950}
+.warn{background:#21262d;border-left:3px solid #d29922;border-radius:4px;padding:10px 14px;margin:7px 0 12px;font-size:12px;color:#d29922}
+.ok-box{background:#21262d;border-left:3px solid #3fb950;border-radius:4px;padding:10px 14px;margin:7px 0 12px;font-size:12px;color:#3fb950}
+.stage{display:flex;margin-bottom:18px;gap:3px;flex-wrap:wrap}
+.stage .s{padding:4px 14px;border-radius:4px;font-size:12px;background:#21262d;color:#8b949e}
+.stage .s.done{background:#1f6feb;color:#fff}
+.stage .s.now{background:#238636;color:#fff}
+.step{display:flex;gap:12px;padding:6px 0}
+.step-num{width:22px;height:22px;background:#1f6feb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-body p{font-size:13px;color:#c9d1d9;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin:7px 0 12px;font-size:12px}
+th,td{border:1px solid #30363d;padding:7px 10px;text-align:left}
+th{background:#21262d;color:#58a6ff;font-weight:600}
+td{color:#c9d1d9}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>慧报空间 — Linux 部署手册</h1>
+<p>RHEL 10 / CentOS Stream 10 · PostgreSQL 16 · Node.js 22 · 端口 8901</p>
+<span class="tag">正式版</span>
+</div>
+
+<div class="container">
+
+<!-- ===== 目录 ===== -->
+<div class="toc">
+<h2>目录</h2>
+<ol>
+<li><a href="#prepare">准备工作</a></li>
+<li><a href="#postgresql">安装 PostgreSQL 16</a></li>
+<li><a href="#database">创建数据库并恢复数据</a></li>
+<li><a href="#nodejs">安装 Node.js 22</a></li>
+<li><a href="#start">首次启动验证</a></li>
+<li><a href="#systemd">配置 systemd 永久运行</a></li>
+<li><a href="#firewall">开放防火墙端口</a></li>
+<li><a href="#maintain">日常维护命令</a></li>
+<li><a href="#qa">常见问题</a></li>
+</ol>
+</div>
+
+<!-- ===== 1. 准备工作 ===== -->
+<div class="card" id="prepare">
+<div class="card-h"><span class="n">1</span><h3>准备工作</h3></div>
+<div class="card-b">
+<h4>环境要求</h4>
+<table>
+<tr><th>项目</th><th>要求</th></tr>
+<tr><td>操作系统</td><td>RHEL 10 / CentOS Stream 10（含兼容版本）</td></tr>
+<tr><td>PostgreSQL</td><td>16.x</td></tr>
+<tr><td>Node.js</td><td>22.x</td></tr>
+<tr><td>端口</td><td>8901（可自定义）</td></tr>
+</table>
+
+<h4>传输项目文件</h4>
+<p>通过 XFtp / scp 将整个项目目录上传到服务器，例如放到 <code>/data/Work Report System/</code>。</p>
+
+<h4>项目目录结构</h4>
+<pre>
+/data/Work Report System/
+├── start.sh                        # Linux 启动脚本
+├── backend/
+│   ├── app.js                      # 后端入口
+│   ├── routes/                     # API 路由
+│   ├── backup.js                   # 数据库备份脚本
+│   └── backup/                     # 备份文件目录
+├── frontend/
+│   ├── dist/                       # 前端构建产物
+│   └── src/                        # 前端源码
+└── restore.sh                      # 恢复脚本
+</pre>
+</div>
+</div>
+
+<!-- ===== 2. 安装 PostgreSQL ===== -->
+<div class="card" id="postgresql">
+<div class="card-h"><span class="n">2</span><h3>安装 PostgreSQL 16</h3></div>
+<div class="card-b">
+
+<pre class="c"># 查看系统自带源中是否有 PostgreSQL</pre>
+<pre>dnf list available | grep postgresql</pre>
+
+<pre class="c"># 安装 PostgreSQL 16 服务端和客户端</pre>
+<pre>sudo dnf install -y postgresql-server postgresql-contrib</pre>
+
+<pre class="c"># 初始化数据库</pre>
+<pre>sudo /usr/bin/postgresql-setup --initdb</pre>
+
+<pre class="c"># 启动 PostgreSQL 并设置开机自启</pre>
+<pre>sudo systemctl start postgresql
+sudo systemctl enable postgresql</pre>
+
+<pre class="c"># 验证状态</pre>
+<pre>sudo systemctl status postgresql</pre>
+
+<div class="ok-box">✓ PostgreSQL 16 安装完成，正在运行</div>
+</div>
+</div>
+
+<!-- ===== 3. 创建数据库并恢复数据 ===== -->
+<div class="card" id="database">
+<div class="card-h"><span class="n">3</span><h3>创建数据库并恢复数据</h3></div>
+<div class="card-b">
+
+<pre class="c"># 设置 postgres 用户密码</pre>
+<pre>sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD '123456';"</pre>
+
+<pre class="c"># 创建数据库</pre>
+<pre>sudo -u postgres createdb work_report_db</pre>
+
+<pre class="c"># 配置允许密码登录（修改认证方式）</pre>
+<pre>sudo sed -i 's/ident/md5/g; s/peer/md5/g' /var/lib/pgsql/data/pg_hba.conf
+sudo systemctl restart postgresql</pre>
+
+<pre class="c"># 恢复数据（从 Windows 导出的备份还原到 Linux）</pre>
+<pre>export PGPASSWORD=123456
+psql -h 127.0.0.1 -U postgres -d work_report_db -f "/data/Work Report System/backend/backup/慧报空间部署备份_2026-05-29T0335.sql"</pre>
+
+<div class="ok-box">✓ 数据库创建完成，数据已恢复</div>
+<div class="warn">⚠ 备份文件在 Windows 上用 pg_dump 导出，传输到 Linux 后直接 psql -f 恢复即可</div>
+</div>
+</div>
+
+<!-- ===== 4. 安装 Node.js ===== -->
+<div class="card" id="nodejs">
+<div class="card-h"><span class="n">4</span><h3>安装 Node.js 22</h3></div>
+<div class="card-b">
+
+<pre class="c"># 添加 NodeSource 源并安装</pre>
+<pre>curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo dnf install -y nodejs</pre>
+
+<pre class="c"># 确认版本</pre>
+<pre>node -v</pre>
+
+<pre class="c"># 输出应为 v22.x.x</pre>
+
+<div class="ok-box">✓ Node.js 22 安装完成</div>
+</div>
+</div>
+
+<!-- ===== 5. 首次启动验证 ===== -->
+<div class="card" id="start">
+<div class="card-h"><span class="n">5</span><h3>首次启动验证</h3></div>
+<div class="card-b">
+
+<pre class="c"># 进入项目目录</pre>
+<pre>cd "/data/Work Report System"</pre>
+
+<pre class="c"># 给启动脚本添加执行权限</pre>
+<pre>chmod +x start.sh</pre>
+
+<pre class="c"># 前台启动（首次会自动 npm install、构建前端）</pre>
+<pre>./start.sh</pre>
+
+<pre class="c"># 看到以下输出即启动成功：</pre>
+<pre>============================================
+  Node.js: v22.22.3
+  数据库：work_report_db@127.0.0.1:5432
+============================================
+  Frontend dist loaded: /data/Work Report System/frontend/dist
+  Work Report backend started on port 8902
+============================================</pre>
+
+<pre class="c"># 按 Ctrl+C 停止（后续改用 systemd 管理）</pre>
+
+<div class="ok-box">✓ 系统运行正常，下一步配置永久运行</div>
+</div>
+</div>
+
+<!-- ===== 6. 配置 systemd 永久运行 ===== -->
+<div class="card" id="systemd">
+<div class="card-h"><span class="n">6</span><h3>配置 systemd 永久运行（关键步骤）</h3></div>
+<div class="card-b">
+
+<h4>6.1 创建 systemd 服务文件</h4>
+<pre>sudo vi /etc/systemd/system/huibao.service</pre>
+
+<p>写入以下内容（直接复制）：</p>
+<pre>[Unit]
+Description=慧报空间
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/data/Work Report System/backend
+ExecStart=/usr/bin/node /data/Work\ Report\ System/backend/app.js
+Environment=PORT=8901
+Environment=DB_HOST=127.0.0.1
+Environment=DB_PORT=5432
+Environment=DB_NAME=work_report_db
+Environment=DB_USER=postgres
+Environment=DB_PASSWORD=123456
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target</pre>
+
+<p>保存退出：按 <code>Esc</code> → 输入 <code>:wq</code> → 回车</p>
+
+<h4>6.2 生效并启动服务（4 条核心命令）</h4>
+<pre class="c"># 1. 重载 systemd，识别新服务</pre>
+<pre>sudo systemctl daemon-reload</pre>
+
+<pre class="c"># 2. 启动服务</pre>
+<pre>sudo systemctl start huibao</pre>
+
+<pre class="c"># 3. 设置开机自启</pre>
+<pre>sudo systemctl enable huibao</pre>
+
+<pre class="c"># 4. 查看状态</pre>
+<pre>sudo systemctl status huibao</pre>
+
+<div class="ok-box">✓ 看到 active (running) 即为成功</div>
+
+<h4>6.3 验证 API</h4>
+<pre>curl -s http://127.0.0.1:8901/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'</pre>
+
+<div class="ok-box">✓ 返回 {"code":200,"data":{"token":"..."}} 即为成功</div>
+
+<h4>6.4 最终效果验证</h4>
+<table>
+<tr><th>场景</th><th>结果</th></tr>
+<tr><td>关闭 XShell</td><td>网站依然可以访问</td></tr>
+<tr><td>服务器重启</td><td>系统自动启动（无需手动操作）</td></tr>
+<tr><td>程序崩溃</td><td>systemd 自动重启（Restart=always）</td></tr>
+<tr><td>日常无需</td><td>不需要再敲 nohup 命令</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ===== 7. 开放防火墙端口 ===== -->
+<div class="card" id="firewall">
+<div class="card-h"><span class="n">7</span><h3>开放防火墙端口</h3></div>
+<div class="card-b">
+
+<pre class="c"># 开放 8901 端口</pre>
+<pre>sudo firewall-cmd --add-port=8901/tcp --permanent
+sudo firewall-cmd --reload</pre>
+
+<pre class="c"># 确认端口已开放</pre>
+<pre>sudo firewall-cmd --list-ports</pre>
+
+<div class="ok-box">✓ 输出应包含 8901/tcp</div>
+
+<h4>访问地址</h4>
+<p>浏览器打开 <code>http://服务器IP:8901</code></p>
+<p>默认账号：<code>admin</code> / <code>admin123</code></p>
+
+<div class="warn">⚠ 如果外部访问不通，联系 IT/运维在云平台安全组中放行 8901 端口</div>
+</div>
+</div>
+
+<!-- ===== 8. 日常维护 ===== -->
+<div class="card" id="maintain">
+<div class="card-h"><span class="n">8</span><h3>日常维护命令</h3></div>
+<div class="card-b">
+
+<table>
+<tr><th>操作</th><th>命令</th></tr>
+<tr><td>重启服务</td><td><code>sudo systemctl restart huibao</code></td></tr>
+<tr><td>停止服务</td><td><code>sudo systemctl stop huibao</code></td></tr>
+<tr><td>查看实时日志</td><td><code>journalctl -u huibao -f</code></td></tr>
+<tr><td>查看最近 100 行日志</td><td><code>journalctl -u huibao -n 100</code></td></tr>
+<tr><td>查看服务状态</td><td><code>sudo systemctl status huibao</code></td></tr>
+<tr><td>手动备份数据库</td><td><code>cd /data/Work\ Report\ System/backend && node backup.js</code></td></tr>
+</table>
+
+<h4>更改端口</h4>
+<p>修改 <code>/etc/systemd/system/huibao.service</code> 中的 <code>Environment=PORT=xxx</code>，然后执行：</p>
+<pre>sudo systemctl daemon-reload
+sudo systemctl restart huibao
+sudo firewall-cmd --add-port=新端口/tcp --permanent
+sudo firewall-cmd --reload</pre>
+</div>
+</div>
+
+<!-- ===== 9. 常见问题 ===== -->
+<div class="card" id="qa">
+<div class="card-h"><span class="n">9</span><h3>常见问题</h3></div>
+<div class="card-b">
+
+<h4>Q: 服务启动失败，如何排查？</h4>
+<pre>journalctl -u huibao -n 50 --no-pager</pre>
+
+<h4>Q: 外部浏览器访问不通？</h4>
+<p>排查顺序：</p>
+<pre class="c"># 1. 服务是否在监听</pre>
+<pre>ss -tlnp | grep 8901</pre>
+<pre class="c"># 2. 本机是否正常</pre>
+<pre>curl -s http://127.0.0.1:8901 | head -5</pre>
+<pre class="c"># 3. 防火墙是否开放</pre>
+<pre>sudo firewall-cmd --list-ports</pre>
+<p>如果以上都正常，联系 IT 检查云平台安全组/网络安全策略。</p>
+
+<h4>Q: 如何切换到其他端口？</h4>
+<p>修改 <code>huibao.service</code> 中的 <code>PORT</code> 环境变量，更新防火墙规则，重启服务即可。</p>
+</div>
+</div>
+
+<!-- ===== Footer ===== -->
+<div style="text-align:center;padding:20px 0;color:#484f58;font-size:12px;border-top:1px solid #21262d;margin-top:20px">
+慧报空间 · Linux 部署手册 · 基于最终正式版配置
+</div>
+
+</div>
+</body>
+</html>

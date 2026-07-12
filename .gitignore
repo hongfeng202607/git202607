@@ -1,0 +1,21 @@
+# 依赖包（体积巨大，不应提交，可用 npm install 还原）
+node_modules/
+
+# 密钥 / 敏感信息
+jwt-secret.txt
+*.env
+.env
+
+# 数据库备份
+backend/backup/
+*.sql
+!database/init.sql
+
+# 各种备份文件
+*.bak
+*.bak*
+*.vue0
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db

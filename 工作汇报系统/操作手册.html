@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慧报空间 · 操作手册</title>
+<style>
+  :root {
+    --primary: #409EFF;
+    --primary-light: #ECF5FF;
+    --success: #67C23A;
+    --warning: #E6A23C;
+    --danger: #F56C6C;
+    --info: #909399;
+    --text: #303133;
+    --text-secondary: #606266;
+    --text-muted: #909399;
+    --border: #DCDFE6;
+    --bg: #F5F7FA;
+    --bg-white: #FFFFFF;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 56px;
+    background: linear-gradient(135deg, #409EFF 0%, #337ecc 100%);
+    display: flex; align-items: center; padding: 0 32px;
+    box-shadow: 0 2px 8px rgba(64,158,255,0.3);
+  }
+  .top-bar .logo {
+    color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 1px;
+  }
+  .top-bar .logo span { font-weight: 300; opacity: 0.85; font-size: 14px; margin-left: 10px; }
+  .top-bar .print-btn {
+    margin-left: auto; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4);
+    padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: all 0.2s;
+  }
+  .top-bar .print-btn:hover { background: rgba(255,255,255,0.35); }
+
+  .sidebar {
+    position: fixed; top: 56px; left: 0; bottom: 0; width: 220px;
+    background: var(--bg-white); border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 16px 0; z-index: 50;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 2px; }
+  .nav-group { margin-bottom: 8px; }
+  .nav-group-title {
+    padding: 8px 20px; font-size: 12px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+  }
+  .nav-item {
+    display: flex; align-items: center; padding: 9px 20px; cursor: pointer;
+    color: var(--text-secondary); font-size: 14px; transition: all 0.2s;
+    border-left: 3px solid transparent; text-decoration: none;
+  }
+  .nav-item:hover { background: var(--primary-light); color: var(--primary); }
+  .nav-item.active { background: var(--primary-light); color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
+  .nav-item .icon { margin-right: 8px; font-size: 16px; width: 20px; text-align: center; }
+
+  .main {
+    margin-left: 220px; margin-top: 56px; padding: 32px 40px 80px;
+    max-width: 960px;
+  }
+
+  h1 { font-size: 28px; margin-bottom: 8px; color: var(--text); }
+  h2 {
+    font-size: 22px; margin: 40px 0 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary); color: var(--text);
+  }
+  h3 { font-size: 17px; margin: 24px 0 12px; color: var(--text); }
+  h4 { font-size: 15px; margin: 16px 0 8px; color: var(--text-secondary); }
+
+  .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+  .card {
+    background: var(--bg-white); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px;
+  }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px;
+  }
+  th, td {
+    padding: 10px 14px; text-align: left; border-bottom: 1px solid #ebeef5;
+  }
+  th {
+    background: #fafafa; font-weight: 600; color: var(--text-secondary);
+    font-size: 13px; white-space: nowrap;
+  }
+  td { color: var(--text); }
+  tr:hover td { background: #f5f7fa; }
+
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 4px;
+    font-size: 12px; font-weight: 500; line-height: 20px;
+  }
+  .tag-blue { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; }
+  .tag-green { background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; }
+  .tag-orange { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+  .tag-red { background: #fef0f0; color: #f56c6c; border: 1px solid #fde2e2; }
+  .tag-gray { background: #f4f4f5; color: #909399; border: 1px solid #e9e9eb; }
+  .tag-purple { background: #f5f0ff; color: #8b5cf6; border: 1px solid #e8dbff; }
+
+  .steps { margin: 16px 0; padding-left: 0; list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step; position: relative; padding: 8px 0 8px 42px;
+    min-height: 32px; border-left: 2px solid #e4e7ed; margin-left: 14px;
+  }
+  .steps li:last-child { border-left-color: transparent; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: -14px; top: 6px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--primary); color: #fff; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .steps li .step-title { font-weight: 600; }
+  .steps li .step-desc { color: var(--text-secondary); font-size: 13px; }
+
+  .tip {
+    padding: 14px 18px; border-radius: 6px; margin: 12px 0; font-size: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .tip-info { background: #ecf5ff; border-left: 4px solid #409eff; color: #5a7da8; }
+  .tip-success { background: #f0f9eb; border-left: 4px solid #67c23a; color: #5a9a3a; }
+  .tip-warning { background: #fdf6ec; border-left: 4px solid #e6a23c; color: #a07830; }
+  .tip-danger { background: #fef0f0; border-left: 4px solid #f56c6c; color: #c45656; }
+
+  .flow {
+    display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+    gap: 8px; margin: 16px 0; padding: 20px;
+    background: #fafbfc; border-radius: var(--radius);
+  }
+  .flow-node {
+    padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    white-space: nowrap;
+  }
+  .flow-arrow { color: var(--text-muted); font-size: 20px; }
+  .fn-draft { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; }
+  .fn-submit { background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; }
+  .fn-review { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+  .fn-reject { background: #fef0f0; color: #f56c6c; border: 1px solid #fde2e2; }
+  .fn-done { background: #f0f9eb; color: #529b2e; border: 2px solid #67c23a; }
+  .fn-admin { background: #f5f0ff; color: #8b5cf6; border: 1px solid #e8dbff; }
+
+  kbd {
+    display: inline-block; padding: 2px 6px; font-size: 12px;
+    background: #f5f7fa; border: 1px solid #dcdfe6; border-radius: 3px;
+    font-family: monospace; color: var(--text-secondary);
+  }
+
+  hr { border: none; border-top: 1px solid #ebeef5; margin: 24px 0; }
+
+  .section-target { scroll-margin-top: 72px; }
+
+  .role-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+  }
+  .rb-emp { background: #f0f9eb; color: #529b2e; }
+  .rb-mgr { background: #fdf6ec; color: #b88230; }
+  .rb-admin { background: #f5f0ff; color: #7c3aed; }
+
+  @media print {
+    .top-bar, .sidebar { display: none !important; }
+    .main { margin: 0; padding: 20px; }
+    .card { box-shadow: none; border: 1px solid #ddd; }
+    body { font-size: 12px; }
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 20px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">📋 慧报空间 <span>操作手册 V2.0</span></div>
+  <button class="print-btn" onclick="window.print()">🖨️ 打印手册</button>
+</div>
+
+<div class="sidebar">
+  <div class="nav-group">
+    <div class="nav-group-title">系统概述</div>
+    <a class="nav-item active" href="#overview" onclick="navTo(this)"><span class="icon">📖</span> 系统说明</a>
+    <a class="nav-item" href="#roles" onclick="navTo(this)"><span class="icon">👥</span> 角色权限</a>
+    <a class="nav-item" href="#login" onclick="navTo(this)"><span class="icon">🔑</span> 登录与账号</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">核心功能</div>
+    <a class="nav-item" href="#dashboard" onclick="navTo(this)"><span class="icon">📊</span> 工作台</a>
+    <a class="nav-item" href="#records" onclick="navTo(this)"><span class="icon">✏️</span> 工作记录</a>
+    <a class="nav-item" href="#reports" onclick="navTo(this)"><span class="icon">📋</span> 周期汇报</a>
+    <a class="nav-item" href="#aigenerate" onclick="navTo(this)"><span class="icon">🤖</span> AI 生成汇报</a>
+    <a class="nav-item" href="#audit" onclick="navTo(this)"><span class="icon">✅</span> 审批管理</a>
+    <a class="nav-item" href="#notify" onclick="navTo(this)"><span class="icon">🔔</span> 通知系统</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">后台管理</div>
+    <a class="nav-item" href="#users" onclick="navTo(this)"><span class="icon">👤</span> 用户管理</a>
+    <a class="nav-item" href="#departments" onclick="navTo(this)"><span class="icon">🏢</span> 部门管理</a>
+    <a class="nav-item" href="#relations" onclick="navTo(this)"><span class="icon">🔗</span> 汇报关系</a>
+    <a class="nav-item" href="#aiconfig" onclick="navTo(this)"><span class="icon">⚙️</span> AI 配置</a>
+    <a class="nav-item" href="#system" onclick="navTo(this)"><span class="icon">🔧</span> 系统管理</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-title">参考信息</div>
+    <a class="nav-item" href="#flow" onclick="navTo(this)"><span class="icon">🔄</span> 业务流程</a>
+    <a class="nav-item" href="#faq" onclick="navTo(this)"><span class="icon">❓</span> 常见问题</a>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ========== 1. 系统说明 ========== -->
+<h2 class="section-target" id="overview">📖 系统说明</h2>
+
+<div class="card">
+  <p>慧报空间是面向团队的工作记录与周期汇报管理平台，支持工作记录管理、周期汇报提交与审批、AI 智能生成汇报内容，实现汇报流程的数字化闭环。</p>
+  <br>
+  <table>
+    <tr><th style="width:120px">项目</th><th>说明</th></tr>
+    <tr><td>系统名称</td><td>慧报空间</td></tr>
+    <tr><td>前端地址</td><td><code>http://服务器IP:5173</code></td></tr>
+    <tr><td>后端端口</td><td>8902</td></tr>
+    <tr><td>默认管理员</td><td>用户名 <code>admin</code>，密码 <code>admin123</code></td></tr>
+    <tr><td>技术栈</td><td>Vue 3 + Element Plus（前端）/ Express 5 + PostgreSQL 18（后端）</td></tr>
+    <tr><td>核心能力</td><td>工作记录 · 周期汇报 · AI 生成 · 审批流转 · 部门管理 · 数据备份</td></tr>
+  </table>
+</div>
+
+<!-- ========== 2. 角色权限 ========== -->
+<h2 class="section-target" id="roles">👥 角色与权限</h2>
+
+<div class="card">
+  <p>系统定义了三种角色，每种角色看到的功能菜单和可执行的操作不同。</p>
+
+  <h3>角色说明</h3>
+  <table>
+    <tr><th>角色</th><th>标识</th><th>可访问页面</th><th>核心职责</th></tr>
+    <tr>
+      <td><span class="role-badge rb-emp">👤 普通员工</span></td>
+      <td>role_type = 1</td>
+      <td>工作台、工作记录、周期汇报</td>
+      <td>填写工作记录、提交周报/月报、使用 AI 生成</td>
+    </tr>
+    <tr>
+      <td><span class="role-badge rb-mgr">👥 管理者（直属上级）</span></td>
+      <td>role_type = 2</td>
+      <td>上述 + 审批管理</td>
+      <td>审批下属汇报、创建汇报时可包含下属数据</td>
+    </tr>
+    <tr>
+      <td><span class="role-badge rb-admin">🔧 超级管理员</span></td>
+      <td>role_type = 3</td>
+      <td>全部页面（含后台管理）</td>
+      <td>用户/部门/汇报关系管理、AI 配置、系统运维</td>
+    </tr>
+  </table>
+
+  <h3>页面权限矩阵</h3>
+  <table>
+    <tr><th>页面</th><th><span class="role-badge rb-emp">普通员工</span></th><th><span class="role-badge rb-mgr">管理者</span></th><th><span class="role-badge rb-admin">超管</span></th></tr>
+    <tr><td>工作台</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>工作记录</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>周期汇报</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>AI 生成（功能按钮）</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>审批管理</td><td style="color:var(--danger)">✗</td><td style="color:var(--success)">✓</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>用户管理</td><td style="color:var(--danger)">✗</td><td style="color:var(--danger)">✗</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>部门管理</td><td style="color:var(--danger)">✗</td><td style="color:var(--danger)">✗</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>汇报关系</td><td style="color:var(--danger)">✗</td><td style="color:var(--danger)">✗</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>AI 配置</td><td style="color:var(--danger)">✗</td><td style="color:var(--danger)">✗</td><td style="color:var(--success)">✓</td></tr>
+    <tr><td>系统管理</td><td style="color:var(--danger)">✗</td><td style="color:var(--danger)">✗</td><td style="color:var(--success)">✓</td></tr>
+  </table>
+</div>
+
+<!-- ========== 3. 登录与账号 ========== -->
+<h2 class="section-target" id="login">🔑 登录与账号</h2>
+
+<div class="card">
+  <h3>登录</h3>
+  <ol class="steps">
+    <li>
+      <div class="step-title">打开浏览器</div>
+      <div class="step-desc">访问系统前端地址（如 <code>http://服务器IP:5173</code>），进入登录页</div>
+    </li>
+    <li>
+      <div class="step-title">输入账号密码</div>
+      <div class="step-desc">填写用户名和密码，可勾选「记住密码」方便下次登录</div>
+    </li>
+    <li>
+      <div class="step-title">进入系统</div>
+      <div class="step-desc">登录成功自动跳转至工作台。如果已登录则直接进入系统，不会停留在登录页</div>
+    </li>
+  </ol>
+
+  <h3>修改密码</h3>
+  <p>点击右上角头像 → 选择「修改密码」，弹出弹窗。需输入原密码、新密码和确认密码。首次登录建议立即修改初始密码。忘记密码请联系超级管理员重置。</p>
+
+  <h3>退出登录</h3>
+  <p>点击右上角头像 → 选择「退出登录」。系统使用 JWT Token 认证，Token 过期后需重新登录。</p>
+
+  <div class="tip tip-info">
+    <span class="tip-icon">💡</span>
+    <span>右上角头像菜单显示当前用户名和角色名（普通员工 / 管理者 / 超级管理员），方便确认登录身份。</span>
+  </div>
+</div>
+
+<!-- ========== 4. 工作台 ========== -->
+<h2 class="section-target" id="dashboard">📊 工作台</h2>
+
+<div class="card">
+  <p>工作台是登录后的默认首页，集中展示数据概览和快捷入口。</p>
+
+  <h3>统计卡片</h3>
+  <table>
+    <tr><th style="width:140px">统计项</th><th>说明</th></tr>
+    <tr><td>工作记录数</td><td>当前用户所有工作记录的总数</td></tr>
+    <tr><td>已提���数</td><td>已提交的工作记录数量</td></tr>
+    <tr><td>汇报单数</td><td>当前用户的周期汇报总数</td></tr>
+    <tr><td>待审核数</td><td>（管理者/超管）待审批的下属汇报数量</td></tr>
+  </table>
+
+  <h3>快捷操作</h3>
+  <p>「填写记录」「提交汇报」所有角色可用；「审批管理」仅管理者和超级管理员可见。</p>
+
+  <h3>审批通知列表</h3>
+  <p>显示各类审批通知（汇报通过/退回/提交等），点击可跳转至对应页面查看详情。</p>
+
+  <h3>最近记录</h3>
+  <p>显示当前用户最近的工作记录列表，包含日期、内容摘要、状态和提交时间。</p>
+</div>
+
+<!-- ========== 5. 工作记录 ========== -->
+<h2 class="section-target" id="records">✏️ 工作记录</h2>
+
+<div class="card">
+  <p>工作记录是系统的基础数据单元，记录每日工作内容。提交后自动归入对应周期的汇报草稿。</p>
+
+  <h3>新增记录</h3>
+  <ol class="steps">
+    <li>
+      <div class="step-title">点击「新增记录」</div>
+      <div class="step-desc">在工作记录页面右上角点击按钮，弹出新增表单</div>
+    </li>
+    <li>
+      <div class="step-title">填写信息</div>
+      <div class="step-desc">选择工作日期（默认当天）并填写工作内容</div>
+    </li>
+    <li>
+      <div class="step-title">选择保存方式</div>
+      <div class="step-desc">
+        <span class="tag tag-gray">保存草稿</span> 保存为草稿，稍后可编辑或提交<br>
+        <span class="tag tag-green">保存并提交</span> 直接提交，自动归入对应周期的汇报
+      </div>
+    </li>
+  </ol>
+
+  <h3>记录状态与操作</h3>
+  <table>
+    <tr><th>状态</th><th>可执行操作</th><th>说明</th></tr>
+    <tr>
+      <td><span class="tag tag-gray">草稿</span></td>
+      <td>编辑、提交、删除</td>
+      <td>未提交，可自由修改</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-green">已提交</span></td>
+      <td>撤回</td>
+      <td>已提交到服务器；撤回后恢复为草稿</td>
+    </tr>
+  </table>
+  <p>如果工作记录已被周期汇报引用且该汇报处于待审核/已通过状态（即已锁定），则编辑/提交/删除按钮会禁用并提示原因。</p>
+
+  <h3>列表与筛选</h3>
+  <table>
+    <tr><th>功能</th><th>说明</th></tr>
+    <tr><td>日期范围筛选</td><td>自定义起止日期，过滤范围内的记录</td></tr>
+    <tr><td>状态筛选</td><td>按「草稿」或「已提交」过滤</td></tr>
+    <tr><td>分页</td><td>每页 10/20/50/100 条，有首页/上页/下页按钮，支持点击页码跳转</td></tr>
+    <tr><td>导出 Excel</td><td>将当前筛选结果导出为 .xlsx 文件到本地</td></tr>
+    <tr><td>导出 JSON</td><td>将当前筛选结果导出为 JSON 备份文件</td></tr>
+    <tr><td>导入记录</td><td>选择 JSON 文件批量导入工作记录到当前账号</td></tr>
+  </table>
+
+  <h3>记录编号</h3>
+  <p>每条工作记录有唯一编号（<code>display_id</code>），格式为 <code>YYMMDDHHmm</code>（如 <code>2606011015</code> 表示 2026-06-01 10:15 创建的记录），在表格中显示。</p>
+
+  <div class="tip tip-success">
+    <span class="tip-icon">📌</span>
+    <span>提交工作记录时，系统自动计算记录所在自然周（周一至周日），将本周所有已提交记录归入对应周报的草稿中。</span>
+  </div>
+</div>
+
+<!-- ========== 6. 周期汇报 ========== -->
+<h2 class="section-target" id="reports">📋 周期汇报</h2>
+
+<div class="card">
+  <p>周期汇报是向上级提交的定期工作总结，支持<strong>周报</strong>和<strong>月报</strong>两种类型。</p>
+
+  <h3>新建汇报</h3>
+  <ol class="steps">
+    <li>
+      <div class="step-title">点击「新建汇报」</div>
+      <div class="step-desc">在周期汇报页面点击右上角的按钮</div>
+    </li>
+    <li>
+      <div class="step-title">选择类型和周期</div>
+      <div class="step-desc">选择「周报」或「月报」，并选择对应的日期范围（弹窗宽度 700px，日期选择器宽度 340px）</div>
+    </li>
+    <li>
+      <div class="step-title">关联工作记录</div>
+      <div class="step-desc">点击「加载工作记录」拉取周期内已提交的工作记录，通过 checkbox 勾选需要关联的记录，支持全选和展开更多</div>
+    </li>
+    <li>
+      <div class="step-title">编写内容</div>
+      <div class="step-desc">直接手动输入正文，或点击「AI 生成」让 AI 自动生成</div>
+    </li>
+    <li>
+      <div class="step-title">提交或保存</div>
+      <div class="step-desc">
+        <span class="tag tag-gray">保存草稿</span> 暂存后续编辑<br>
+        <span class="tag tag-green">提交</span> 提交给上级审批（自动关联周期内已提交的工作记录到 <code>report_record</code> 表）
+      </div>
+    </li>
+  </ol>
+
+  <h3>管理者的「含下属」功能</h3>
+  <p>管理者和超级管理员在创建/编辑汇报时，可以勾选「含下属（周期全覆盖）」选项。勾选后，系统会加载直接下属在周期范围内的已通过汇报内容，作为编写参考。跨级下属不会加载（因为中间级已汇总了其下属内容）。下属汇报的周期必须完全落在当前筛选周期范围内才会被加载。</p>
+
+  <h3>汇报状态与操作</h3>
+  <table>
+    <tr><th>状态（后端值）</th><th>可执行操作</th><th>说明</th></tr>
+    <tr>
+      <td><span class="tag tag-gray">草稿（0）</span></td>
+      <td>编辑、提交、删除</td>
+      <td>尚未提交，可自由编辑</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-green">已提交（1）</span></td>
+      <td>查看审批日志</td>
+      <td>已提交给上级，等待审批</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-red">已退回（2）</span></td>
+      <td>编辑后重新提交</td>
+      <td>上级退回，修改后可再次提交</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-purple">已通过（3）</span></td>
+      <td>查看详情、查看审批日志</td>
+      <td>上级已审核通过，汇报完成</td>
+    </tr>
+  </table>
+
+  <h3>编辑草稿注意事项</h3>
+  <table>
+    <tr><th>场景</th><th>说明</th></tr>
+    <tr><td>变更类型/周期</td><td>如果修改报告类型（周报/月报）或周期范围，系统自动重载关联的工作记录</td></tr>
+    <tr><td>AI 生成中</td><td>编辑已有草稿时，AI 生成期间内容输入框被禁用，生成完毕后恢复。新建弹窗中 AI 生成时不锁定输入框</td></tr>
+    <tr><td>保存记录关联</td><td>创建时选中的工作记录保存后自动关联，类型或周期变更后保存也会更新关联</td></tr>
+  </table>
+
+  <h3>顶部筛选</h3>
+  <p>支持「全部 / 草稿 / 进行中 / 已通过」四个 radio 按钮快速切换视图。</p>
+
+  <h3>审批日志</h3>
+  <p>每份汇报的审批操作（退回原因、备注等）以时间线形式记录，可随时查看。</p>
+</div>
+
+<!-- ========== 7. AI 生成汇报 ========== -->
+<h2 class="section-target" id="aigenerate">🤖 AI 生成汇报</h2>
+
+<div class="card">
+  <p>AI 生成功能基于 OpenAI 兼容 API，将周期内的工作记录自动组织为汇报内容，大幅提升编写效率。</p>
+
+  <h3>使用条件</h3>
+  <p>需要超级管理员先在「AI 配置」页面设置好 AI 接口（接口地址、模型、密钥），所有员工方可使用。</p>
+
+  <h3>使用步骤</h3>
+  <ol class="steps">
+    <li>
+      <div class="step-title">新建汇报或编辑草稿</div>
+      <div class="step-desc">进入汇报编辑界面</div>
+    </li>
+    <li>
+      <div class="step-title">点击「AI 生成」按钮</div>
+      <div class="step-desc">系统读取周期内已提交的工作记录作为输入，调用 AI 生成汇报内容。生成过程中按钮显示「AI 生成中...」并有弹窗提示</div>
+    </li>
+    <li>
+      <div class="step-title">审阅并提交</div>
+      <div class="step-desc">AI 生成的内容自动填入正文输入框，人工审阅修改后提交</div>
+    </li>
+  </ol>
+  <div class="tip tip-warning">
+    <span class="tip-icon">⚠️</span>
+    <span>AI 生成的内容仅供参考，请务必人工审阅后再提交。如果「AI 生成」按钮灰色不可点击，说明 AI 接口尚未配置，请联系超级管理员处理。</span>
+  </div>
+</div>
+
+<!-- ========== 8. 审批管理 ========== -->
+<h2 class="section-target" id="audit">✅ 审批管理</h2>
+
+<div class="card">
+  <div class="tip tip-info" style="margin:0 0 12px 0;">
+    <span class="tip-icon">👥</span>
+    <span>本功能对<span class="tag tag-orange">管理者</span>和<span class="tag tag-purple">超级管理员</span>开放。普通员工看不到此菜单。</span>
+  </div>
+
+  <p>审批管理是上级审核下属周期汇报的核心功能。</p>
+
+  <h3>审批范围</h3>
+  <table>
+    <tr><th>选项</th><th>说明</th></tr>
+    <tr><td>全部下属</td><td>查看所有有汇报关系的下属汇报（含间接下属，需跨级权限）</td></tr>
+    <tr><td>直属下属</td><td>仅查看直接汇报给自己的下属的汇报</td></tr>
+  </table>
+
+  <h3>状态筛选</h3>
+  <table>
+    <tr><th>选项</th><th>说明</th></tr>
+    <tr><td>待审核（1）</td><td>下属已提交、等待审批的汇报（默认视图）</td></tr>
+    <tr><td>已退回（2）</td><td>你曾经退回过的汇报</td></tr>
+    <tr><td>已通过（3）</td><td>已审核通过的汇报</td></tr>
+    <tr><td>全部</td><td>所有下属的各类汇报</td></tr>
+  </table>
+
+  <h3>审批操作</h3>
+  <table>
+    <tr><th>操作</th><th>说明</th></tr>
+    <tr>
+      <td><span class="tag tag-green">通过</span></td>
+      <td>审核通过，汇报状态变为「已通过」。可选填审批意见，员工会收到通过通知</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-red">退回</span></td>
+      <td>填写退回原因（必填），汇报状态变为「已退回」。员工可查看原因并修改后重新提交</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-blue">备注</span></td>
+      <td>添加审批备注，不改变汇报状态。可用于补充建议</td>
+    </tr>
+  </table>
+
+  <h3>权限规则</h3>
+  <ul style="margin:8px 0 0 20px;color:var(--text-secondary);font-size:14px;line-height:1.8;">
+    <li>操作按钮仅对当前汇报单的接收人（<code>receiver_id</code>）显示</li>
+    <li>超级管理员可以审批任何人提交的汇报</li>
+    <li>管理者只能审批提交给自己的汇报</li>
+  </ul>
+
+  <h3>审批日志</h3>
+  <p>每份汇报的所有审批操作（退回原因、通过意见、备注）以时间线形式记录，操作人、操作类型、时间、内容均可追溯。</p>
+</div>
+
+<!-- ========== 9. 通知系统 ========== -->
+<h2 class="section-target" id="notify">🔔 通知系统</h2>
+
+<div class="card">
+  <p>系统通过通知及时告知用户重要事件。</p>
+
+  <h3>通知方式</h3>
+  <table>
+    <tr><th style="width:160px">方式</th><th>说明</th></tr>
+    <tr><td>顶部铃铛</td><td>右上角铃铛图标显示未读数量（红色数字），每 60 秒自动轮询更新</td></tr>
+    <tr><td>通知面板</td><td>点击铃铛弹出通知列表，支持「全部已读」</td></tr>
+    <tr><td>工作台通知卡片</td><td>工作台首页以卡片形式展示通知</td></tr>
+  </table>
+
+  <h3>通知类型</h3>
+  <table>
+    <tr><th>场景</th><th>发送方 → 接收方</th><th>说明</th></tr>
+    <tr><td>员工提交汇报</td><td>提交人 → 上级</td><td>通知上级有新的汇报待审核</td></tr>
+    <tr><td>上级退回汇报</td><td>审批人 → 提交人</td><td>通知包含退回原因</td></tr>
+    <tr><td>上级通过汇报</td><td>审批人 → 提交人</td><td>通知包含通过意见</td></tr>
+    <tr><td>上级添加备注</td><td>审批人 → 提交人</td><td>通知包含备注内容</td></tr>
+  </table>
+</div>
+
+<!-- ========== 10. 用户管理 ========== -->
+<h2 class="section-target" id="users">👤 用户管理</h2>
+
+<div class="card">
+  <div class="tip tip-info" style="margin:0 0 12px 0;">
+    <span class="tip-icon">🔧</span>
+    <span>本功能仅<span class="tag tag-red">超级管理员</span>可访问。</span>
+  </div>
+
+  <h3>功能说明</h3>
+  <table>
+    <tr><th>操作</th><th>说明</th></tr>
+    <tr><td>查看用户列表</td><td>按部门树形分组展示，部门为分组标题，用户列于其下，支持多级缩进</td></tr>
+    <tr><td>新建用户</td><td>填写用户名（唯一，创建后不可修改）、姓名、密码，选择角色（普通员工/管理者）和所属部门。注意：不能创建超级管理员</td></tr>
+    <tr><td>编辑用户</td><td>修改姓名、密码（可选留空不修改）、角色、部门</td></tr>
+    <tr><td>删除用户</td><td>软删除（标记为已删除，数据保留在数据库中）</td></tr>
+  </table>
+</div>
+
+<!-- ========== 11. 部门管理 ========== -->
+<h2 class="section-target" id="departments">🏢 部门管理</h2>
+
+<div class="card">
+  <div class="tip tip-info" style="margin:0 0 12px 0;">
+    <span class="tip-icon">🔧</span>
+    <span>本功能仅<span class="tag tag-red">超级管理员</span>可访问。</span>
+  </div>
+
+  <h3>功能说明</h3>
+  <table>
+    <tr><th>操作</th><th>说明</th></tr>
+    <tr><td>查看部门树</td><td>树形展示所有部门，支持展开/折叠，默认全部展开</td></tr>
+    <tr><td>添加子部门</td><td>选择父级部门，填写部门名称和排序值，创建下级部门</td></tr>
+    <tr><td>编辑部门</td><td>修改部门名称、上级部门、排序值</td></tr>
+    <tr><td>删除部门</td><td>删除部门（如有下级部门或用户关联，需谨慎操作）</td></tr>
+  </table>
+</div>
+
+<!-- ========== 12. 汇报关系 ========== -->
+<h2 class="section-target" id="relations">🔗 汇报关系管理</h2>
+
+<div class="card">
+  <div class="tip tip-info" style="margin:0 0 12px 0;">
+    <span class="tip-icon">🔧</span>
+    <span>本功能仅<span class="tag tag-red">超级管理员</span>可访问。</span>
+  </div>
+
+  <p>定义「谁向谁汇报」的关系，确保工作记录和汇报能正确流转到对应上级。如果员工没有配置汇报关系，其提交的汇报将无法被上级看到。</p>
+
+  <h3>功能说明</h3>
+  <table>
+    <tr><th>操作</th><th>说明</th></tr>
+    <tr><td>查看关系列表</td><td>按部门树形分组展示，每行显示：汇报人 → 接收人（含角色标签）</td></tr>
+    <tr><td>添加关系</td><td>选择汇报人（普通员工）和接收人（管理者/超级管理员）</td></tr>
+    <tr><td>删除关系</td><td>移除汇报关系（硬删除，立即生效）</td></tr>
+  </table>
+
+  <div class="tip tip-warning">
+    <span class="tip-icon">⚠️</span>
+    <span>新建员工后请及时配置汇报关系，否则上级无法看到该员工的汇报内容。</span>
+  </div>
+</div>
+
+<!-- ========== 13. AI 配置 ========== -->
+<h2 class="section-target" id="aiconfig">⚙️ AI 配置</h2>
+
+<div class="card">
+  <div class="tip tip-info" style="margin:0 0 12px 0;">
+    <span class="tip-icon">🔧</span>
+    <span>本功能仅<span class="tag tag-red">超级管理员</span>可访问。普通员工和管理者均看不到此页面。</span>
+  </div>
+
+  <p>配置 AI 生成汇报所需的接口参数。支持所有 OpenAI 兼容 API（含国内模型如智谱 GLM、DeepSeek、通义千问、Kimi 等）。</p>
+
+  <h3>配置项</h3>
+  <table>
+    <tr><th>配置项</th><th>说明</th><th>示例</th></tr>
+    <tr><td>接口地址</td><td>AI 服务的 API 地址</td><td><code>https://api.openai.com/v1/chat/completions</code></td></tr>
+    <tr><td>模型名称</td><td>使用的模型标识</td><td><code>gpt-4o-mini</code></td></tr>
+    <tr><td>API 密钥</td><td>接口认证密钥（只显示前4位和后4位）</td><td><code>sk-xxxx...xxxx</code></td></tr>
+    <tr><td>系统提示词</td><td>控制 AI 生成汇报的格式和风格</td><td>你是一个工作汇报助手...</td></tr>
+  </table>
+
+  <h3>操作说明</h3>
+  <ol class="steps">
+    <li>
+      <div class="step-title">填写配置</div>
+      <div class="step-desc">填入接口地址、模型名称、API 密钥和系统提示词</div>
+    </li>
+    <li>
+      <div class="step-title">测试连接</div>
+      <div class="step-desc">点击「测试连接」验证 API 是否能正常响应，会显示成功或失败提示</div>
+    </li>
+    <li>
+      <div class="step-title">保存</div>
+      <div class="step-desc">测试通过后点击「保存」即可生效</div>
+    </li>
+  </ol>
+
+  <h3>修改密钥</h3>
+  <p>如需修改完整密钥，点击「修改密钥」按钮，在弹窗中输入完整的新密钥。</p>
+
+  <div class="tip tip-warning">
+    <span class="tip-icon">⚠️</span>
+    <span>接口地址使用 <code>localhost</code> 可能解析到 IPv6 导致连接失败，建议使用 <code>127.0.0.1</code>。</span>
+  </div>
+</div>
+
+<!-- ========== 14. 系统管理 ========== -->
+<h2 class="section-target" id="system">🔧 系统管理</h2>
+
+<div class="card">
+  <div class="tip tip-info" style="margin:0 0 12px 0;">
+    <span class="tip-icon">🔧</span>
+    <span>本功能仅<span class="tag tag-red">超级管理员</span>可访问。</span>
+  </div>
+
+  <p>系统管理包含三个标签页：在线用户、数据备份、系统日志。</p>
+
+  <h3>在线用户</h3>
+  <table>
+    <tr><th>功能</th><th>说明</th></tr>
+    <tr><td>在线状态</td><td>5分钟内有操作的用户显示为「在线」，否则为「离线」</td></tr>
+    <tr><td>AI 调用次数</td><td>统计每位用户累计的 AI 生成调用次数和最后调用时间</td></tr>
+    <tr><td>清退用户</td><td>点击后该用户 Token 立即失效，下次操作被强制退出登录。重新登录即可恢复</td></tr>
+  </table>
+
+  <h3>数据备份</h3>
+  <table>
+    <tr><th>操作</th><th>说明</th></tr>
+    <tr><td>创建备份</td><td>调用 pg_dump 导出完整数据库并自动 gzip 压缩，文件名格式：<code>慧报空间备份_YYYYMMDD_HHmm.sql.gz</code></td></tr>
+    <tr><td>恢复</td><td>选择备份文件恢复数据库（危险操作，会覆盖当前所有数据，需二次确认）</td></tr>
+    <tr><td>删除</td><td>删除不再需要的备份文件</td></tr>
+  </table>
+
+  <h3>系统日志</h3>
+  <table>
+    <tr><th>功能</th><th>说明</th></tr>
+    <tr><td>查看日志</td><td>记录时间、用户、操作类型（标签化显示）、详情，支持分页</td></tr>
+    <tr><td>操作类型</td><td>登录、保存草稿、提交记录、撤回记录、删除记录、AI 生成、通过、退回、备份、恢复、清退、清理日志等</td></tr>
+    <tr><td>自动清理</td><td>每天凌晨 3 点自动删除 30 天前的日志</td></tr>
+    <tr><td>手动清理</td><td>点击「清理日志」按钮，自定义保留天数删除过期日志</td></tr>
+  </table>
+</div>
+
+<!-- ========== 15. 业务流程 ========== -->
+<h2 class="section-target" id="flow">🔄 业务流程总览</h2>
+
+<div class="card">
+  <h3>日常工作流</h3>
+  <div class="flow">
+    <span class="flow-node fn-draft">📝 填写工作记录</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node fn-submit">📤 提交记录</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node fn-review">📋 自动归入周报</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node fn-draft">✍️ 编写/AI生成汇报</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node fn-submit">📨 提交汇报</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-node fn-review">👁️ 上级审批</span>
+  </div>
+
+  <h3>汇报状态流转</h3>
+  <div class="flow">
+    <span class="flow-node fn-draft">草稿</span>
+    <span class="flow-arrow">→ 提交 →</span>
+    <span class="flow-node fn-submit">已提交</span>
+    <span class="flow-arrow">→ 审批通过 →</span>
+    <span class="flow-node fn-done">已通过 ✅</span>
+  </div>
+  <div class="flow" style="margin-top:8px;">
+    <span class="flow-node fn-submit">已提交</span>
+    <span class="flow-arrow">→ 退回 →</span>
+    <span class="flow-node fn-reject">已退回</span>
+    <span class="flow-arrow">→ 修改后重新提交 →</span>
+    <span class="flow-node fn-submit">已提交</span>
+  </div>
+
+  <h3>一周典型操作节奏</h3>
+  <table>
+    <tr><th style="width:80px">时间</th><th>员工操作</th><th>管理者操作</th><th>超级管理员操作</th></tr>
+    <tr>
+      <td>日常</td>
+      <td>填写并提交工作记录</td>
+      <td>（同员工）填写自己的记录</td>
+      <td>日常系统维护</td>
+    </tr>
+    <tr>
+      <td>汇报周期末</td>
+      <td>创建周报，确认记录已归集，补充总结，提交</td>
+      <td>审批下属汇报，也可在创建自己汇报时引用下属数据</td>
+      <td>（同管理者）审批汇报</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ========== 16. 常见问题 ========== -->
+<h2 class="section-target" id="faq">❓ 常见问题</h2>
+
+<div class="card">
+  <h3>Q1: 员工提交了记录，但上级看不到？</h3>
+  <p>请检查是否已为该员工配置汇报关系。路径：超级管理员 → 汇报关系管理 → 添加关系。</p>
+
+  <h3>Q2: 如何修改密码？</h3>
+  <p>点击右上角头像 → 修改密码。输入旧密码和新密码即可。遗忘请联系超级管理员重置。</p>
+
+  <h3>Q3: AI 生成按钮灰色不可点击？</h3>
+  <p>需超级管理员先在「AI 配置」页面完成 API 地址、模型名称、密钥的配置并保存。</p>
+
+  <h3>Q4: 草稿数据会丢失吗？</h3>
+  <p>草稿存储于服务器数据库，不会因浏览器缓存清除或电脑重启而丢失。</p>
+
+  <h3>Q5: 忘记密码怎么办？</h3>
+  <p>请联系超级管理员重置密码。管理员可在用户管理中编辑用户信息并设置新密码。</p>
+
+  <h3>Q6: 周报周期是如何划分的？</h3>
+  <p>按自然周划分（周一至周日），提交工作记录时自动归入记录日期所在周的周报草稿。</p>
+
+  <h3>Q7: 被退回的汇报如何处理？</h3>
+  <p>在周期汇报页面找到被退回的汇报，点击编辑修改内容后点击「重新提交」即可再次提交给上级。</p>
+
+  <h3>Q8: 管理者看不到某些下属的汇报？</h3>
+  <p>请确认：1）该下属的汇报已提交（不是草稿）；2）汇报关系已正确配置（你是该下属的接收人）。如配置正确仍看不到，请联系超级管理员排查。</p>
+
+  <h3>Q9: 如何导出工作记录？</h3>
+  <p>在工作记录页面筛选好时间段后，点击「导出 Excel」或「导出 JSON」，即可将当前筛选结果保存到本地。</p>
+
+  <h3>Q10: 新建用户时可以选择哪些角色？</h3>
+  <p>只能创建「普通员工」和「管理者」。超级管理员账号需要由系统预置，不能通过界面创建。</p>
+</div>
+
+<hr>
+<p style="text-align:center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">
+  慧报空间 · 操作手册 V2.0 &nbsp;|&nbsp; 基于系统代码实测更新 &nbsp;|&nbsp; 更新日期：2026-06-01
+</p>
+
+</div><!-- .main -->
+
+<script>
+function navTo(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+const sections = document.querySelectorAll('.section-target');
+const navItems = document.querySelectorAll('.nav-item');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navItems.forEach(item => {
+        item.classList.toggle('active', item.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-80px 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
