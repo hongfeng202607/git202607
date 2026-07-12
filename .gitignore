@@ -32,3 +32,6 @@ __pycache__/
 V07.5.12_5.24/db_config.ini
 # 用户上传的二进制图片，非源码
 V07.5.12_5.24/uploads/
+
+# 工作记忆目录不入库（本地保留）
+.workbuddy/memory/
