@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>智行知识库</title>
+    <link rel="stylesheet" href="/static/style.css?v=07512u">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#165DFF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="智行知识库">
+    <link rel="apple-touch-icon" href="/upload/logo.png">
+</head>
+<body>
+
+<!-- 登录 -->
+<div class="login-wrap" id="loginWrap">
+    <div class="login-card">
+        <h2 style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:25px;font-size:22px;color:#165DFF;">
+            <img src="/upload/logo.png" alt="" style="width:40px;height:40px;">智行知识库登录
+        </h2>
+        <div class="login-err" id="loginErr"></div>
+        <input type="text" id="username" placeholder="请输入账号" autocomplete="off" oninput="clearPwdOnUserChange()">
+        <input type="password" id="pwd" placeholder="请输入密码" autocomplete="off">
+        
+        <div class="reset-checkbox">
+            <input type="checkbox" id="rememberPwd">
+            <label for="rememberPwd">记住密码</label>
+        </div>
+        <button class="login-btn" onclick="login()">立即登录</button>
+    </div>
+</div>
+
+<!-- 重置密码 -->
+<div class="reset-modal" id="resetModal">
+    <div class="reset-modal-content">
+        <h3>重置密码</h3>
+        <div class="reset-err" id="resetErr"></div>
+        <input type="password" id="newPwd" placeholder="请输入新密码（≥6位）">
+        <input type="password" id="confirmPwd" placeholder="请确认新密码">
+        <button class="login-btn" onclick="submitResetPwd()">确认重置</button>
+        <button class="login-btn" style="background:#6b7280;margin-top:10px" onclick="closeResetModal()">取消</button>
+    </div>
+</div>
+
+<!-- 修改个人密码弹窗 -->
+<div class="modal" id="selfPwdModal">
+    <div class="reset-modal-content">
+        <h3>修改登录密码</h3>
+        <div class="reset-err" id="selfPwdErr"></div>
+        <input type="password" id="self_oldPwd" placeholder="原密码">
+        <input type="password" id="self_newPwd" placeholder="新密码（≥6位）">
+        <input type="password" id="self_confirmPwd" placeholder="确认新密码">
+        <button class="login-btn" onclick="changeSelfPwd()">确认修改</button>
+        <button class="login-btn" style="background:#6b7280;margin-top:10px" onclick="closeModal('selfPwdModal')">取消</button>
+    </div>
+</div>
+
+<!-- 账号管理弹窗 -->
+<div class="modal" id="userModal">
+    <div class="modal-content user-modal-content">
+        <h3>账号管理</h3>
+        <div class="add-user-row">
+            <input id="newUserName" placeholder="账号">
+            <input id="newUserPwd" placeholder="密码（默认123456）">
+            <select id="newUserRole" style="width: 120px;">
+                <!-- 由JS动态加载 roleList -->
+            </select>
+            <button class="btn" onclick="addUser()">新增</button>
+        </div>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>账号</th>
+                    <th>角色</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+        <div style="display:flex;gap:10px;margin-top:10px;justify-content:space-between;">
+            <button class="btn" id="batchSaveRoleBtn" onclick="batchSaveRoles()" disabled style="background:#165DFF;color:white;opacity:0.4;">💾 保存角色变更</button>
+            <button class="btn" style="background:#6b7280" onclick="closeModal('userModal')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 角色管理弹窗 -->
+<div class="modal" id="roleModal">
+    <div class="modal-content" style="width:750px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;">
+        <h3>🎯 角色管理</h3>
+        <div style="display:flex;gap:16px;flex:1;min-height:0;">
+            <!-- 左：角色列表 -->
+            <div style="width:200px;flex-shrink:0;border-right:1px solid #e5e7eb;padding-right:12px;overflow-y:auto;">
+                <div id="roleListPanel"></div>
+                <button class="btn" onclick="addCustomRole()" style="width:100%;margin-top:8px;background:#165DFF;color:white;">➕ 新建角色</button>
+            </div>
+            <!-- 右：权限勾选区 -->
+            <div style="flex:1;overflow-y:auto;padding-left:4px;">
+                <div id="rolePermPanel">
+                    <div style="color:#999;text-align:center;margin-top:60px;">← 请选择左侧角色进行编辑</div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:12px;text-align:right;border-top:1px solid #ccc;padding-top:10px;">
+            <button class="btn" style="background:#165DFF;color:white;" onclick="saveRolePerm()">保存权限</button>
+            <button class="btn" style="background:#6b7280;color:white;" onclick="closeModal('roleModal')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 统一设置弹窗（查重阈值 + AI配置） -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content settings-content">
+        <div class="settings-drag-handle" id="settingsDragHandle" onmousedown="initSettingsDrag(event)">
+            <h3>⚙ 系统设置</h3>
+            <span style="font-size:11px;color:#c9cdd4;">⠿ 拖动</span>
+        </div>
+
+        <!-- ===== 手风琴：查重设置 ===== -->
+        <div class="accordion-item" id="accDedup">
+            <div class="accordion-header" onclick="toggleAccordion('accDedup')">
+                <span>🔍 查重设置</span>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <!-- 查重总开关 -->
+                <div class="switch-wrap" onclick="toggleDedup()" style="cursor:pointer;margin-bottom:10px;">
+                    <div class="switch on" id="dedupSwitch"></div>
+                    <div>
+                        <div class="switch-label">查重校验</div>
+                        <div class="switch-sub" id="dedupStatus">新增知识时自动检测重复 · 已开启</div>
+                    </div>
+                </div>
+                <!-- 查重范围 -->
+                <div class="field-group">
+                    <label>查重范围</label>
+                    <div class="pill-group">
+                        <label class="pill" id="pillTitle" onclick="togglePill(this)">
+                            <input type="checkbox" id="dedupCbTitle" onchange="saveDedupCheckboxes()">
+                            <span>📄 仅标题</span>
+                        </label>
+                        <label class="pill" id="pillContent" onclick="togglePill(this)">
+                            <input type="checkbox" id="dedupCbContent" onchange="saveDedupCheckboxes()">
+                            <span>📚 标题+内容</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- 查重阈值 -->
+                <div class="field-group">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <label>相似度阈值</label>
+                        <span class="fade-hint">选择一项即可，仅标题更快，标题+内容更准</span>
+                    </div>
+                    <div class="slider-row">
+                        <span style="font-size:12px;color:#86909c;">低</span>
+                        <input type="range" id="dedupSlider" min="10" max="100" value="30" step="5"
+                            oninput="updateDedupLabel(this.value)">
+                        <span class="slider-val" id="dedupValueLabel">30%</span>
+                        <span style="font-size:12px;color:#86909c;">高</span>
+                    </div>
+                    <div class="fade-hint">相似度 ≥ 阈值时弹窗提示，默认 30%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 手风琴：AI接口配置 ===== -->
+        <div class="accordion-item" id="accAi">
+            <div class="accordion-header" onclick="toggleAccordion('accAi')">
+                <span>🤖 AI 接口配置</span>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <p style="font-size:11px;color:#86909c;margin-bottom:6px;">仅管理员可操作。默认对接阿里百炼通义千问，可自行更换。</p>
+                <div style="margin-bottom:6px;">
+                    <label style="font-size:11px;color:#555;display:block;margin-bottom:2px;">API 地址</label>
+                    <input id="aiCfgUrl" style="width:100%;padding:7px 10px;border:1px solid #dcdfe6;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box;" placeholder="https://api.deepseek.com/v1/chat/completions（必须以 /chat/completions 结尾）">
+                </div>
+                <div style="margin-bottom:6px;">
+                    <label style="font-size:11px;color:#555;display:block;margin-bottom:2px;">API Key</label>
+                    <input id="aiCfgKey" type="password" style="width:100%;padding:7px 10px;border:1px solid #dcdfe6;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box;" placeholder="留空则不修改，或输入新Key覆盖">
+                    <span style="font-size:11px;color:#999;" id="aiKeyHint"></span>
+                </div>
+                <div style="margin-bottom:6px;">
+                    <label style="font-size:11px;color:#555;display:block;margin-bottom:2px;">模型名称</label>
+                    <input id="aiCfgModel" style="width:100%;padding:7px 10px;border:1px solid #dcdfe6;border-radius:8px;outline:none;font-size:13px;box-sizing:border-box;" placeholder="qwen3-max">
+                </div>
+                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:2px;">
+                    <button class="btn" style="background:#165DFF;color:white;padding:6px 14px;font-size:12px;" onclick="testAiConnection()">🔌 测试连接</button>
+                    <button class="btn" style="background:#00b42a;color:white;padding:6px 14px;font-size:12px;" onclick="saveAiConfig()">保存 AI 配置</button>
+                </div>
+                <div id="aiConfigMsg" style="margin-top:6px;font-size:12px;text-align:center;"></div>
+            </div>
+        </div>
+
+        <!-- ===== 手风琴：数据权限 ===== -->
+        <div class="accordion-item" id="accDataPerm">
+            <div class="accordion-header" onclick="toggleAccordion('accDataPerm')">
+                <span>🔐 数据权限</span>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body" id="dataPermBody">
+                <p style="font-size:11px;color:#86909c;margin-bottom:10px;">开启后，普通用户只能查看自己创建的知识记录。管理员可在此为用户分配可查看的其他创建人。</p>
+                <div class="switch-wrap" onclick="toggleDataPerm()" style="cursor:pointer;margin-bottom:12px;" id="dataPermSwitchWrap">
+                    <div class="switch" id="dataPermSwitch"></div>
+                    <div>
+                        <div class="switch-label">数据权限隔离</div>
+                        <div class="switch-sub" id="dataPermStatus">按创建人隔离知识记录 · 已关闭</div>
+                    </div>
+                </div>
+                <div id="dataPermMgrWrap" style="display:none;text-align:right;">
+                    <button class="btn" style="background:#165DFF;color:white;padding:6px 14px;font-size:12px;" onclick="openDataPermModal()">📋 授权管理</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 手风琴：背景主题 ===== -->
+        <div class="accordion-item" id="accTheme">
+            <div class="accordion-header" onclick="toggleAccordion('accTheme')" style="border-left:4px solid #f9ab00;">
+                <span>🎨 背景主题</span>
+                <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <p style="font-size:11px;color:#86909c;margin-bottom:6px;">选择喜欢的背景风格，切换后立即生效，下次登录自动恢复。</p>
+                <div class="theme-grid" id="themeGrid"></div>
+                <div class="theme-current" id="themeLabel"></div>
+            </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #ccc;margin:16px 0;">
+        <div style="text-align:right;">
+            <button class="btn" style="background:#6b7280;color:#fff;" onclick="closeModal('settingsModal')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 数据权限管理弹窗 -->
+<div class="modal" id="dataPermModal">
+    <div class="modal-content" style="width:750px;max-width:90vw;max-height:85vh;display:flex;flex-direction:column;">
+        <h3>🔐 数据权限 · 授权管理</h3>
+        <div style="display:flex;gap:16px;flex:1;min-height:0;">
+            <!-- 左：用户列表 -->
+            <div style="width:200px;flex-shrink:0;border-right:1px solid #e5e7eb;padding-right:12px;overflow-y:auto;">
+                <div style="font-size:12px;color:#86909c;margin-bottom:8px;">选择用户后，右侧勾选其可查看的创建人</div>
+                <div id="dpUserList"></div>
+            </div>
+            <!-- 右：创建人勾选 -->
+            <div style="flex:1;overflow-y:auto;padding-left:4px;">
+                <div id="dpGrantPanel">
+                    <div style="color:#999;text-align:center;margin-top:60px;">← 请选择左侧用户进行授权</div>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:12px;text-align:right;border-top:1px solid #ccc;padding-top:10px;">
+            <button class="btn" style="background:#165DFF;color:white;" onclick="saveDataPermGrant()">保存授权</button>
+            <button class="btn" style="background:#6b7280;color:white;" onclick="closeModal('dataPermModal')">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 主界面 -->
+<div class="main-container" id="mainContainer">
+
+    <div class="wrap">
+        <div class="header-row">
+            <div class="header-left">
+                    <img src="/upload/logo.png" alt="智行知识库" style="width:60px;height:60px;margin-top:4px;">
+                    <div class="header-text-group">
+                        <div class="header-title">智行知识库</div>
+                        <div class="header-slogan">智汇万象 · 行知致远</div>
+                    </div>
+                </div>
+                <!-- PC端顶部工具栏 -->
+                <div class="top-info" id="topInfo">
+                    <span class="user-info" id="currentUserInfo" data-initial="U">admin</span>
+                    <button class="logout-btn" onclick="openModal('selfPwdModal')">🔑 修改密码</button>
+                    <button class="logout-btn perm-recycle" onclick="openRecycleModal()">🗑️ 回收站</button>
+                    <button class="logout-btn perm-settings" onclick="openSettingsModal()">⚙️ 设置</button>
+                    <div class="more-menu">
+                        <button class="logout-btn more-trigger" onclick="toggleMoreMenu()">更多 ▾</button>
+                        <div class="more-dropdown" id="moreDropdown">
+                            <button class="dropdown-item perm-user-mgr" onclick="openUserModal()">👥 账号管理</button>
+                            <button class="dropdown-item perm-role-mgr" onclick="openRoleModal()">🎯 角色管理</button>
+                            <button class="dropdown-item perm-tools" onclick="openToolsModal()">⚒️ 数据管理</button>
+                        </div>
+                    </div>
+                    <button class="logout-btn" style="color:#f53f3f;" onclick="logout()">🚪 退出</button>
+                </div>
+                <!-- 移动端侧边栏触发按钮 -->
+                <button class="user-sidebar-trigger" id="userSidebarTrigger" onclick="toggleUserSidebar()">
+                    <span class="user-trigger-avatar" id="triggerAvatar">👤</span>
+                    <span class="user-trigger-name" id="triggerName">admin</span>
+                    <span class="user-trigger-arrow">▾</span>
+                </button>
+        </div>
+
+        <div class="stat-box" id="dashboardRow">
+            <!-- 4 stat cards -->
+            <div class="stat-card stat-total-card" id="stat-total">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                    <div class="stat-label">总知识条数</div>
+                    <div class="stat-num" id="totalCount">0</div>
+                </div>
+                <svg class="stat-sparkline" id="sparkTotal" viewBox="0 0 80 28" preserveAspectRatio="none"></svg>
+            </div>
+            <div class="stat-card stat-weekly-card" id="stat-weekly">
+                <div class="stat-icon">📈</div>
+                <div class="stat-info">
+                    <div class="stat-label">本周新增</div>
+                    <div class="stat-num" id="weeklyCount">0</div>
+                </div>
+            </div>
+            <div class="stat-card stat-monthly-card" id="stat-monthly">
+                <div class="stat-icon">📅</div>
+                <div class="stat-info">
+                    <div class="stat-label">本月新增</div>
+                    <div class="stat-num" id="monthlyCount">0</div>
+                </div>
+            </div>
+            <div class="stat-card stat-star-card" id="stat-star">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-info">
+                    <div class="stat-label">星标收藏</div>
+                    <div class="stat-num" id="starCount">0</div>
+                </div>
+            </div>
+            <!-- category donut -->
+            <div class="stat-card stat-cate-card" id="stat-cate">
+                <div class="stat-cate-header">
+                    <span>📊 分类分布</span>
+                    <span class="stat-cate-total" id="cateCount">0 个</span>
+                </div>
+                <div class="stat-cate-body">
+                    <svg id="cateDonut" viewBox="0 0 120 120" width="70" height="70"></svg>
+                    <div class="cate-legend" id="cateLegend"></div>
+                </div>
+            </div>
+            <!-- recent activity -->
+            <div class="stat-card stat-activity-card" id="stat-activity">
+                <div class="stat-activity-header">🕐 最近动态</div>
+                <div class="stat-activity-body" id="recentActivity">
+                    <div class="activity-empty">暂无动态</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="search-card card">
+                <h3>🔍 知识搜索</h3>
+                <div class="search-row">
+                    <div class="search-input-wrap">
+                        <input type="text" id="searchKey" placeholder="关键词/ID搜索，按回车搜索">
+                        <button class="search-clear-btn" id="searchClearBtn">×</button>
+                        <div id="suggestBox" class="suggest-box"></div>
+                    </div>
+                    <select id="cateSel" onchange="currentPage=1;search()">
+                        <option value="全部">全部分类</option>
+                    </select>
+                    <button class="btn" onclick="currentPage=1;search()">搜索</button>
+                </div>
+                <div class="search-row date-filter-row" style="margin-top:-2px;display:flex;align-items:center;gap:8px;">
+                    <div class="date-input-wrap">
+                        <input type="text" id="startDate" placeholder="起始日期" readonly onfocus="openCalendar(this,'startDate')">
+                        <span class="cal-icon">📅</span>
+                    </div>
+                    <span style="line-height:30px;color:#666;">至</span>
+                    <div class="date-input-wrap">
+                        <input type="text" id="endDate" placeholder="结束日期" readonly onfocus="openCalendar(this,'endDate')">
+                        <span class="cal-icon">📅</span>
+                    </div>
+                    <button class="btn" style="padding:2px 5px; font-size:10px;background:#6b7280;" onclick="clearDateRange()">清除日期</button>
+                </div>
+                <div class="result-tip" id="resultTip"></div>
+                <div class="result-box" id="result"></div>
+                <button class="back-top-btn" id="backTopBtn" onclick="scrollSearchTop()" title="回到顶部">↑</button>
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+            <div class="add-card card" id="addCard">
+                <div class="mobile-close-bar" style="display:none;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <h3 style="margin:0 !important;">📝 新增知识</h3>
+                    <button onclick="toggleAddCard()" style="width:32px;height:32px;border:none;background:#f0f0f0;border-radius:50%;font-size:18px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;">✕</button>
+                </div>
+
+                <!-- ===================== 【新增】AI智能录入模块 ===================== -->
+                <div style="padding:0; margin-bottom:8px;">
+                    <div style="border:1px solid #e0e4ea; border-radius:8px; padding:8px 14px; background:#f8f9fb;">
+                        <div onclick="toggleAI()" style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; user-select:none;">
+                            <h4 style="color:#165DFF; font-size:14px; margin:0; display:flex; align-items:center; gap:6px;">
+                                <span>🤖</span> AI快捷智能录入
+                            </h4>
+                            <span id="aiToggleIcon" style="font-size:14px; color:#165DFF; transition:transform 0.2s;">▸</span>
+                        </div>
+                        <div id="aiBody" style="display:none; margin-top:8px;">
+                            <div style="font-size:12px; color:#999; margin-bottom:6px;">粘贴任意杂乱文字，自动拆解回填下方表单</div>
+                            <textarea id="aiInput" placeholder="请粘贴需要解析的杂乱文字..." style="width:100%; min-height:80px; padding:8px 12px; border:1px solid #dcdfe6; border-radius:6px; font-size:13px; outline:none; resize:vertical; margin:6px 0; transition:all 0.2s ease; box-sizing:border-box; font-family:Microsoft YaHei,sans-serif;" onfocus="this.style.borderColor='#165DFF'; this.style.boxShadow='0 0 0 3px rgba(22,93,255,0.15)'" onblur="this.style.borderColor='#dcdfe6'; this.style.boxShadow='none'"></textarea>
+                            <div style="text-align:center; padding-top:4px; display:flex; gap:8px; justify-content:center; align-items:center;">
+                                <button id="aiParseBtn" class="btn" onclick="aiParse()" style="font-size:13px; padding:7px 20px; display:inline-block;">🤖 AI智能解析并回填表单</button>
+                                <button onclick="document.getElementById('aiInput').value='';document.getElementById('aiMsg').innerText=''" style="padding:4px 10px; font-size:11px; background:#e0e0e0; color:#666; border:none; border-radius:4px; cursor:pointer; transition:all 0.2s ease; white-space:nowrap;" onmouseover="this.style.background='#d0d0d0'" onmouseout="this.style.background='#e0e0e0'">🗑️ 清空输入</button>
+                                <button onclick="document.getElementById('newCate').selectedIndex=0;document.getElementById('proposer').value='';document.getElementById('question').value='';document.getElementById('solution').value='';document.getElementById('remark').value=''" style="padding:4px 10px; font-size:11px; background:#e0e0e0; color:#666; border:none; border-radius:4px; cursor:pointer; transition:all 0.2s ease; white-space:nowrap;" onmouseover="this.style.background='#d0d0d0'" onmouseout="this.style.background='#e0e0e0'">🗑️ 清空表单</button>
+                            </div>
+                            <div id="aiMsg" style="margin-top:4px; font-size:12px; color:#666; text-align:center; min-height:16px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cate-row" style="margin-top:8px;">
+                    <select id="newCate"></select>
+                    <button class="btn btn-sm" id="cateMgrBtn" onclick="openCateModal()">分类管理</button>
+                </div>
+                <input type="text" id="proposer" placeholder="提出人">
+                <input type="text" id="question" placeholder="标题（必填）">
+                <span id="questionHint" style="display:none;color:#f53f3f;font-size:12px;margin:-12px 0 14px 2px;">请填写标题</span>
+                <textarea id="solution" placeholder="核心内容（必填）"></textarea>
+                <span id="solutionHint" style="display:none;color:#f53f3f;font-size:12px;margin:-12px 0 14px 2px;">请填写核心内容</span>
+                <textarea id="remark" placeholder="补充说明"></textarea>
+                <div style="margin-top:8px; padding:8px 10px; border:1px solid #eaeaea; border-radius:6px; background:#fafbfc;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#666; margin-bottom:6px;">
+                        <span>📎 附件支持:txt/excel/pdf/word/html/png/jpg/</span>
+                        <button type="button" class="btn btn-sm" onclick="document.getElementById('newFileInput').click()">📎 上传附件</button>
+                    </div>
+                    <div id="newAttachmentList" style="font-size:12px; display:flex; flex-direction:column; gap:4px;"></div>
+                    <span id="newAttachTip" style="margin-top:6px; display:block; font-size:12px; color:#666; opacity:1; transition:opacity 1s ease;"></span>
+                </div>
+                <input type="file" id="newFileInput" style="display:none;" onchange="doNewUpload(event)">
+                <div style="text-align:right; margin-top:10px;">
+                    <button class="btn" onclick="add()">保存</button>
+                </div>
+                <div id="msg" class="msg"></div>
+                <div style="margin-top:25px; padding-top:15px; border-top:1px solid #ccc; font-size:14px; color:#666;">
+                    💡 录入提示：分类准确、标题清晰、内容详细，有助检索。
+                    <div style="text-align:left; margin-left:70px;; margin-top:10px; font-size:13px; color:#999;">
+                        红枫-智行知识库 © 20260524 · V07.5.12
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 手机端浮动新增按钮 -->
+        <button class="mobile-add-fab" id="mobileAddFab" onclick="toggleAddCard()">✏️</button>
+    </div>
+</div>
+
+<!-- 数据管理弹窗 -->
+<div class="modal" id="toolsModal">
+    <div class="modal-content" style="width:960px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;">
+        <h3>⚒ 数据管理</h3>
+        <div style="display:flex;gap:16px;flex:1;min-height:0;">
+            <!-- 左栏：操作区 -->
+            <div style="width:280px;flex-shrink:0;overflow-y:hidden;padding-right:4px;display:flex;flex-direction:column;">
+                <div>
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:12px;color:#86909c;margin-bottom:6px;font-weight:600;">📊 数据操作</div>
+                        <button class="btn btn-sm" style="background:#0f9d58;color:#fff;margin-bottom:6px;font-size:12px;" onclick="toolsExport()">📥 导出全部到 Excel</button>
+                        <button class="btn btn-sm" style="background:#165DFF;color:#fff;margin-bottom:6px;font-size:12px;" onclick="document.getElementById('toolsImportFile').click()">📤 从 Excel 导入恢复</button>
+                        <input type="file" id="toolsImportFile" accept=".xlsx,.xls" style="display:none" onchange="toolsImport(this)">
+                        <button class="btn btn-sm btn-del" style="margin-bottom:4px;font-size:12px;" onclick="toolsClear()">🗑️ 清空全部知识记录</button>
+                    </div>
+                    <hr style="border:none;border-top:1px solid #ccc;margin:10px 0;">
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:12px;color:#86909c;margin-bottom:6px;font-weight:600;">💾 备份管理</div>
+                        <button class="btn btn-sm" style="background:#f9ab00;color:#fff;margin-bottom:6px;font-size:12px;" onclick="toolsBackup()">📦 手动备份数据库</button>
+                        <button class="btn btn-sm" style="background:#764ba2;color:#fff;margin-bottom:4px;font-size:12px;" onclick="toolsInitTables()">🏗️ 初始化数据库表结构</button>
+                    </div>
+                    <hr style="border:none;border-top:1px solid #ccc;margin:10px 0;">
+                    <div style="margin-bottom:12px;">
+                        <div style="font-size:12px;color:#86909c;margin-bottom:6px;font-weight:600;">🔢 ID 流水号</div>
+                        <div id="toolsIdSeqInfo" style="font-size:12px;color:#666;margin-bottom:6px;padding:6px 8px;background:#f7f8fa;border-radius:6px;">加载中...</div>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <input type="number" id="toolsIdSeqInput" value="1" min="0" style="flex:1;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none;">
+                            <button class="btn-sm" style="background:#f9ab00;color:#fff;border:none;border-radius:6px;cursor:pointer;padding:5px 10px;font-size:12px;" onclick="toolsResetIdSeq()">确认重置</button>
+                        </div>
+                    </div>
+                    <hr style="border:none;border-top:1px solid #ccc;margin:10px 0;">
+                </div>
+                <div id="toolsBackupList" style="margin-bottom:8px;flex:1;overflow-y:auto;min-height:0;"></div>
+                <div class="progress-wrap" id="toolsProgressWrap" style="display:none;">
+                    <div class="progress-bar"><div class="progress-bar-inner" id="toolsProgressInner"></div></div>
+                    <div class="progress-text" id="toolsProgressText">处理中...</div>
+                </div>
+                <div class="msg" id="toolsMsg" style="display:none;"></div>
+            </div>
+
+            <!-- 右栏：操作日志 -->
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;border-left:1px solid #eee;padding-left:16px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0;">
+                    <span style="font-size:13px;color:#555;font-weight:600;">📋 操作日志</span>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                        <select id="logLevelFilter" onchange="loadLogs()" style="height:28px;padding:0 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;outline:none;">
+                            <option value="">全部级别</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                        </select>
+                        <input type="text" id="logKeywordInput" placeholder="搜索日志..." oninput="logSearchDebounce()" style="height:28px;padding:0 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;width:120px;outline:none;box-sizing:border-box;">
+                        <button class="btn-sm" onclick="loadLogs()" title="刷新" style="background:#165DFF;color:#fff;border:none;border-radius:6px;cursor:pointer;padding:0 10px;height:28px;font-size:12px;">🔄</button>
+                        <button class="btn-sm" onclick="clearLogs()" title="删除" style="background:#f53f3f;color:#fff;border:none;border-radius:6px;cursor:pointer;padding:0 10px;height:28px;font-size:12px;">🗑️</button>
+                    </div>
+                </div>
+                <div id="logListContainer" style="flex:1;min-height:0;overflow-y:auto;border:1px solid #eee;border-radius:8px;background:#1a1a2e;font-size:12px;"></div>
+                <div id="logPagination" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:13px;color:#555;flex-shrink:0;">
+                    <span id="logTotalInfo" style="font-weight:500;">共 0 条</span>
+                    <div style="display:flex;gap:4px;align-items:center;">
+                        <button class="btn-sm" onclick="logPrevPage()" style="padding:4px 12px;font-size:13px;border:1px solid #c9cdd4;border-radius:6px;cursor:pointer;background:#fff;color:#333;font-weight:500;">上一页</button>
+                        <span id="logPageInfo" style="line-height:28px;padding:0 8px;font-weight:600;color:#333;">1/1</span>
+                        <button class="btn-sm" onclick="logNextPage()" style="padding:4px 12px;font-size:13px;border:1px solid #c9cdd4;border-radius:6px;cursor:pointer;background:#fff;color:#333;font-weight:500;">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:12px;text-align:right;border-top:1px solid #ccc;padding-top:10px;flex-shrink:0;">
+            <button class="btn" style="background:#6b7280;color:#fff;" onclick="closeToolsModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <h3>编辑记录</h3>
+        <input type="hidden" id="editId">
+        <select id="editCate"></select>
+        <input type="text" id="editProposer" placeholder="提出人">
+        <input type="text" id="editQ" placeholder="标题">
+                <textarea id="editA" placeholder="核心内容"></textarea>
+        <textarea id="editR" placeholder="补充说明"></textarea>
+
+        <div id="attachmentArea" style="margin-top:8px; padding:8px 10px; border:1px solid #eaeaea; border-radius:6px; background:#fafbfc; display: block !important;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#666; margin-bottom:6px;">
+                <span>📎 附件支持:txt/excel/pdf/word/html/png/jpg/</span>
+                <button type="button" class="btn btn-sm" onclick="chooseEditFile()">📎 上传附件</button>
+            </div>
+            <div id="attachmentList" style="font-size:12px; display:flex; flex-direction:column; gap:4px;"></div>
+            <span id="editAttachTip" style="margin-left:0; margin-top:6px; display:block; font-size:12px; color:#666; opacity:1; transition: opacity 1s ease;"></span>
+        </div>
+        <input type="file" id="editFileInput" style="display:none;" onchange="doEditUpload(event)">    
+
+        <div style="text-align: right; margin-top: 10px;">
+            <button class="btn" onclick="closeModal('editModal')" style="margin-right:8px;">取消</button>
+            <button class="btn" id="aiEnhanceBtn" style="background:#9f7aea;color:#fff;" onclick="aiEnhance()">✨ AI优化</button>
+            <button class="btn" onclick="saveEdit()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 分类弹窗 -->
+<div class="modal" id="cateModal">
+    <div class="modal-content">
+        <h3>自定义分类</h3>
+        <p style="font-size:13px;color:#888;margin-bottom:10px;">分类自动从知识库记录中提取，你也可以在此新增/删除/排序管理。</p>
+        <div class="cate-list-container" id="cateList"></div>
+        <div id="cateTip"></div>
+        <div style="margin-top: 24px; display: flex; justify-content: space-between; gap:10px;">
+            <button class="btn" onclick="addCateItem()">+ 新增分类</button>
+            <div style="display:flex;gap:10px;">
+                <button class="btn" onclick="saveCateConfig()">保存</button>
+                <button class="btn btn-del btn-close" onclick="closeModal('cateModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 定位弹窗 -->
+<div class="modal" id="posModal">
+    <div class="modal-content" style="width:380px;">
+        <h3>定位到</h3>
+        <p id="posModalInfo" style="font-size:13px;color:#666;margin-bottom:12px;"></p>
+        <input type="number" id="posInput" min="1" style="margin-bottom:12px;" placeholder="输入目标位置编号">
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button class="btn btn-del btn-close" onclick="closeModal('posModal')">取消</button>
+            <button class="btn" onclick="confirmMovePos()">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 回收站 -->
+<div class="modal" id="recycleModal">
+    <div class="modal-content recycle-modal-content">
+        <h3>🗑️ 回收站</h3>
+        <div id="recycleList"></div>
+        <div class="recycle-footer">
+            <div class="recycle-count" id="recycleCount">共 0 条记录</div>
+            <button class="btn btn-close" onclick="closeModal('recycleModal')">关闭</button>
+        </div>
+    </div>
+</div>
+    <script src="/static/app.js?v=07512u"></script>
+<!-- 全局提示浮层 -->
+<div id="toastOverlay"><div class="toast-box" id="toastText"></div></div>
+<!-- 顶部通知条 -->
+<div id="topNotify"><div class="notify-bar" id="notifyText"></div></div>
+<!-- 自定义确认弹窗 -->
+<div id="confirmOverlay">
+    <div class="confirm-box">
+        <span class="confirm-icon">⚠️</span>
+        <div class="confirm-msg" id="confirmMsg"></div>
+        <div class="confirm-btns">
+            <button class="btn-cancel" id="confirmCancel">取消</button>
+            <button class="btn-ok" id="confirmOk">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 自定义输入弹窗 -->
+<div id="promptOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:999999;align-items:center;justify-content:center;">
+    <div class="confirm-box" style="text-align:left;">
+        <div style="font-size:16px;font-weight:600;color:#1d2129;margin-bottom:16px;" id="promptTitle">请输入</div>
+        <input id="promptInput" style="width:100%;padding:10px 12px;border:1px solid #d9d9d9;border-radius:8px;font-size:14px;outline:none;box-sizing:border-box;" placeholder="" autofocus>
+        <div id="promptError" style="color:#f53f3f;font-size:13px;margin-top:6px;display:none;"></div>
+        <div class="confirm-btns" style="margin-top:20px;">
+            <button class="btn-cancel" id="promptCancel">取消</button>
+            <button class="btn-ok" id="promptOk">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 查重弹窗 -->
+<div id="dupOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:60px 20px;box-sizing:border-box;">
+    <div style="background:#fff;border-radius:12px;max-width:600px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.18);overflow:hidden;">
+        <div style="padding:20px 24px 0;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <span id="dupWarnIcon" style="font-size:28px;">⚠️</span>
+                <div>
+                    <div style="font-size:18px;font-weight:600;color:#1d2129;">发现相似知识记录</div>
+                    <div id="dupSummary" style="font-size:13px;color:#86909c;margin-top:4px;"></div>
+                </div>
+            </div>
+            <div id="dupList" style="max-height:340px;overflow-y:auto;margin:12px 0 16px;padding-right:4px;"></div>
+            <div style="font-size:14px;color:#4e5969;padding:12px 0;border-top:1px solid #ccc;text-align:center;">
+                确认仍要保存这条新知识吗？
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;padding:0 24px 20px;justify-content:flex-end;">
+            <button onclick="dupCancel()" style="flex:1;padding:10px 0;border:1px solid #dcdfe6;border-radius:8px;background:#fff;color:#4e5969;font-size:14px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">取消保存</button>
+            <button id="dupSaveBtn" onclick="dupProceed()" style="flex:1;padding:10px 0;border:none;border-radius:8px;background:#165DFF;color:#fff;font-size:14px;cursor:pointer;transition:all 0.2s;font-weight:500;" onmouseover="this.style.background='#0e42d2'" onmouseout="this.style.background='#165DFF'">仍要保存</button>
+        </div>
+    </div>
+</div>
+<!-- 附件查看浮层 -->
+<div id="attachViewerOverlay">
+    <div class="attach-viewer-box">
+        <h4>📎 附件列表</h4>
+        <div id="attachViewerList"></div>
+        <div id="attachPreviewArea">
+            <div class="preview-header">
+                <span id="previewFileName">预览</span>
+                <span class="close-preview" onclick="closePreview()">✕</span>
+            </div>
+            <div class="preview-content" id="previewContent"></div>
+        </div>
+        <button class="close-attach-btn" onclick="document.getElementById('attachViewerOverlay').style.display='none'">关闭</button>
+    </div>
+</div>
+
+<!-- 智能助手 -->
+<div id="aiHelperOverlay" onclick="closeAiHelper()"></div>
+<button id="aiHelperBtn" onclick="toggleAiHelper()" title="智能搜索">🔮</button>
+<div id="aiHelperPanel">
+    <div class="panel-header">
+        <h3>💡 智能搜索助手</h3>
+        <button class="panel-close" onclick="closeAiHelper()">✕</button>
+    </div>
+    <div class="panel-search">
+        <input id="aiHelperInput" placeholder="输入关键词，自动检索..." autocomplete="off">
+        <button id="aiHelperClearBtn" onclick="clearAiHelperInput()">✕</button>
+    </div>
+    <div id="helperAiThinking" style="display:none;flex-direction:column;align-items:center;padding:6px 16px 4px;flex-shrink:0;gap:4px;box-sizing:border-box;">
+        <span style="font-size:20px;color:#52c41a;font-weight:500;letter-spacing:1px;">AI加载中</span>
+        <div style="width:100%;height:2px;border-radius:2px;background:#e8e8e8;overflow:hidden;">
+            <div style="width:30%;height:100%;border-radius:2px;background:linear-gradient(90deg,#52c41a,#73d13d);animation:aiProgressMove 1.2s ease-in-out infinite;"></div>
+        </div>
+    </div>
+        <div class="panel-results" id="aiHelperResults">
+            <div class="helper-answer" id="helperAnswer" style="display:none;"></div>
+            <div class="helper-records-label" id="helperRecordsLabel" style="display:none;font-size:12px;color:#86909c;margin-bottom:6px;padding-left:2px;">📋 参考记录</div>
+            <div class="helper-records" id="helperRecords">
+                <div class="panel-tip">💬 试试问我<br>「某某在哪个部门」<br>「报销审批流程是什么」<br>「会议室怎么预约」<br>「ERP账号怎么申请」<br>「公司有哪些IT系统」</div>
+            </div>
+        </div>
+    <div class="panel-status" id="aiHelperStatus"></div>
+</div>
+<!-- 自定义日历面板 -->
+<div class="custom-calendar" id="datePickerPanel">
+    <div class="cal-header">
+        <button class="cal-nav" onclick="calPrevMonth()">‹</button>
+        <span class="cal-title" id="calTitle">2026年5月</span>
+        <button class="cal-nav" onclick="calNextMonth()">›</button>
+    </div>
+    <div class="cal-weekdays">
+        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+</div>
+<!-- 用户功能侧边栏 -->
+<div id="userSidebarOverlay" onclick="closeUserSidebar()"></div>
+<div id="userSidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-user-info">
+            <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+            <div>
+                <div class="sidebar-username" id="sidebarUsername">admin</div>
+                <div class="sidebar-role" id="sidebarRole">管理员</div>
+            </div>
+        </div>
+        <button class="sidebar-close" onclick="closeUserSidebar()">✕</button>
+    </div>
+    <div class="sidebar-menu">
+        <button onclick="openModal('selfPwdModal');closeUserSidebar()">
+            <span class="sb-icon">🔑</span> 修改密码
+        </button>
+        <button class="perm-recycle" onclick="openRecycleModal();closeUserSidebar()">
+            <span class="sb-icon">🗑️</span> 回收站
+        </button>
+        <button class="perm-settings" onclick="openSettingsModal();closeUserSidebar()">
+            <span class="sb-icon">⚙️</span> 系统设置
+        </button>
+        <div class="sidebar-divider"></div>
+        <button class="perm-user-mgr" onclick="openUserModal();closeUserSidebar()">
+            <span class="sb-icon">👥</span> 账号管理
+        </button>
+        <button class="perm-role-mgr" onclick="openRoleModal();closeUserSidebar()">
+            <span class="sb-icon">🎯</span> 角色管理
+        </button>
+        <button class="perm-tools" onclick="openToolsModal();closeUserSidebar()">
+            <span class="sb-icon">⚒️</span> 数据管理
+        </button>
+        <div class="sidebar-divider"></div>
+        <button class="sidebar-logout" onclick="logout()">
+            <span class="sb-icon">🔌</span> 退出登录
+        </button>
+    </div>
+</div>
+
+</body>
+</html>

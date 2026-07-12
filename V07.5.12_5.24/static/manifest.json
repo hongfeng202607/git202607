@@ -1,0 +1,22 @@
+{
+    "name": "智行知识库",
+    "short_name": "智行知识库",
+    "description": "智汇万象 · 行知致远",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#165DFF",
+    "background_color": "#f0f4f8",
+    "icons": [
+        {
+            "src": "/upload/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/upload/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

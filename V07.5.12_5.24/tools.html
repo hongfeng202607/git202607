@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识库管理工具</title>
+<script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Microsoft YaHei", sans-serif;
+  background: #f0f2f5; color: #333;
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+}
+.container {
+  background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.1);
+  padding: 40px; width: 480px; max-width: 94vw;
+}
+h1 { font-size: 22px; text-align: center; color: #1a73e8; margin-bottom: 6px; }
+.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 28px; }
+.login-form label { display: block; font-size: 14px; margin-bottom: 4px; color: #555; }
+.login-form input {
+  width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px;
+  font-size: 15px; margin-bottom: 16px; outline: none; transition: .2s;
+}
+.login-form input:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,.15); }
+.btn {
+  display: block; width: 100%; padding: 14px; border: none; border-radius: 10px;
+  font-size: 16px; font-weight: 600; cursor: pointer; transition: .2s;
+  text-align: center; margin-bottom: 12px;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: #1a73e8; color: #fff; }
+.btn-primary:hover { background: #1557b0; }
+.btn-success { background: #0f9d58; color: #fff; }
+.btn-success:hover { background: #0b8043; }
+.btn-warning { background: #f9ab00; color: #fff; }
+.btn-warning:hover { background: #d88e00; }
+.btn-danger { background: #d93025; color: #fff; }
+.btn-danger:hover { background: #b3261e; }
+.btn-outline { background: #fff; color: #555; border: 1px solid #ddd; }
+.btn-outline:hover { background: #f5f5f5; }
+.btn-sm { padding: 8px 16px; font-size: 13px; width: auto; display: inline-block; }
+.panel { display: none; }
+.panel.active { display: block; }
+.welcome-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 16px; border-bottom: 1px solid #eee; margin-bottom: 24px;
+}
+.welcome-bar .user { font-size: 14px; color: #555; }
+.welcome-bar .user strong { color: #1a73e8; }
+.msg {
+  padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px;
+  display: none;
+}
+.msg.show { display: block; }
+.msg-info { background: #e8f0fe; color: #1a73e8; }
+.msg-success { background: #e6f4ea; color: #0f9d58; }
+.msg-error { background: #fce8e6; color: #d93025; }
+.progress-wrap { display: none; margin-bottom: 16px; }
+.progress-wrap.show { display: block; }
+.progress-bar {
+  width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%; background: #1a73e8; border-radius: 3px; transition: width .3s;
+  width: 0%;
+}
+.progress-text { font-size: 12px; color: #888; margin-top: 4px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <h1>智行知识库</h1>
+  <p class="subtitle">数据管理工具 · 导出 / 导入 / 备份 / 恢复</p>
+
+  <div class="panel active" id="panelLogin">
+    <div class="login-form">
+      <label>用户名</label>
+      <input type="text" id="username" value="admin" placeholder="请输入用户名">
+      <label>密码</label>
+      <input type="password" id="password" placeholder="请输入密码">
+      <button class="btn btn-primary" onclick="doLogin(this)">登 录</button>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelTools">
+    <div class="welcome-bar">
+      <span class="user">欢迎，<strong id="displayUser"></strong></span>
+      <button class="btn-sm btn-outline" onclick="doLogout()">退出</button>
+    </div>
+    <div class="msg" id="toolMsg"></div>
+    <button class="btn btn-success" onclick="doExport(this)">📥 导出全部到 Excel</button>
+    <button class="btn btn-primary" onclick="document.getElementById('importFile').click()">📤 从 Excel 导入恢复</button>
+    <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="doImport(this)">
+    <button class="btn btn-danger" onclick="doClear(this)">🗑️ 清空全部知识记录</button>
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+    <button class="btn btn-warning" onclick="doBackup(this)">📦 手动备份数据库</button>
+    <button class="btn btn-outline" onclick="doRefreshBackupList(this)" style="margin-bottom:8px;">🔄 刷新备份列表</button>
+    <div id="backupListCollapse" style="margin-bottom:4px;text-align:center;display:none;">
+      <button class="btn-sm btn-outline" onclick="toggleBackupList()" id="toggleBackupBtn">展开全部备份</button>
+    </div>
+    <div id="backupList" style="margin-bottom:16px;"></div>
+    <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
+    <button class="btn btn-outline" style="background:#764ba2;color:#fff;" onclick="doInitTables(this)">🏗️ 初始化数据库表结构（空库建表用）</button>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-bar-inner" id="progressInner"></div></div>
+      <div class="progress-text" id="progressText">处理中...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'kb_user_token';
+  let gToken = (function() {
+    try { return localStorage.getItem(STORAGE_KEY) || ''; } catch(e) { return ''; }
+  })();
+
+  function setToken(val) {
+    gToken = val;
+    try { localStorage.setItem(STORAGE_KEY, val); } catch(e) {}
+  }
+
+  function clearToken() {
+    gToken = '';
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  }
+
+  function showMsg(elemId, text, type) {
+    const el = document.getElementById(elemId);
+    el.textContent = text;
+    el.className = 'msg show msg-' + type;
+  }
+
+  function hideMsg(elemId) {
+    document.getElementById(elemId).className = 'msg';
+  }
+
+  function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  async function apiFetch(url, options) {
+    if (!options) options = {};
+    if (!options.headers) options.headers = {};
+    options.headers['Content-Type'] = 'application/json';
+    if (gToken) options.headers['token'] = gToken;
+    const resp = await fetch(url, options);
+    if (resp.status === 401) {
+      clearToken();
+      showPanel('panelLogin');
+      showMsg('loginMsg', '登录已过期，请重新登录', 'error');
+      throw new Error('登录已过期');
+    }
+    const text = await resp.text();
+    try {
+      return JSON.parse(text);
+    } catch(e) {
+      throw new Error('服务器返回异常 (HTTP ' + resp.status + '): ' + text.substring(0, 200));
+    }
+  }
+
+  // ======== 登录 ========
+  window.doLogin = async function(btn) {
+    hideMsg('loginMsg');
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value.trim();
+    if (!u || !p) { showMsg('loginMsg', '请填写用户名和密码', 'error'); return; }
+    btn.disabled = true; btn.textContent = '登录中...';
+    try {
+      const data = await apiFetch('/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
+      if (data.status === 'success') {
+        setToken(data.token);
+        document.getElementById('displayUser').textContent = data.username;
+        showPanel('panelTools');
+        setTimeout(doRefreshBackupList, 500);
+        showMsg('toolMsg', '登录成功！', 'success');
+      } else {
+        showMsg('loginMsg', data.msg || '登录失败', 'error');
+      }
+    } catch(e) {
+      showMsg('loginMsg', '网络错误：' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = '登 录';
+  };
+
+  window.doLogout = function() {
+    clearToken();
+    showPanel('panelLogin');
+  };
+
+  // 自动登录检测
+  (async function() {
+    if (gToken) {
+      try {
+        const data = await apiFetch('/api/permissions/me', { method: 'GET' });
+        if (data.status === 'success') {
+          document.getElementById('displayUser').textContent = 'admin';
+          showPanel('panelTools');
+          setTimeout(doRefreshBackupList, 500);
+          return;
+        }
+      } catch(e) {}
+      clearToken();
+    }
+  })();
+
+  // ======== 导出 Excel ========
+  window.doExport = async function(btn) {
+    hideMsg('toolMsg');
+    btn.disabled = true; btn.textContent = '导出中...';
+    try {
+      showProgress('正在获取数据...', 10);
+      const data = await apiFetch('/search', {
+        method: 'POST',
+        body: JSON.stringify({ keyword: '', cate: '全部', page: 1, pageSize: 99999 })
+      });
+      if (!data.records || data.records.length === 0) {
+        showMsg('toolMsg', '没有数据可导出', 'info');
+        btn.disabled = false; btn.textContent = '📥 导出全部到 Excel';
+        hideProgress();
+        return;
+      }
+      showProgress('正在生成 Excel...', 50);
+      const rows = data.records.map(function(r) {
+        return {
+          '分类': r.category || '',
+          '标题': r.question || '',
+          '核心内容': r.solution || '',
+          '补充说明': r.remark || '',
+          '创建人': r.submitter || '',
+          '提出人': r.proposer || '',
+          '记录时间': r.record_time || ''
+        };
+      });
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [
+        { wch: 12 }, { wch: 30 }, { wch: 40 }, { wch: 20 },
+        { wch: 12 }, { wch: 12 }, { wch: 22 }
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, '知识记录');
+      showProgress('下载中...', 90);
+      var now = new Date();
+      var ts = now.getFullYear() + ('0'+(now.getMonth()+1)).slice(-2) + ('0'+now.getDate()).slice(-2)
+              + '_' + ('0'+now.getHours()).slice(-2) + ('0'+now.getMinutes()).slice(-2);
+      XLSX.writeFile(wb, '知识记录_导出_' + ts + '.xlsx');
+      showProgress('完成', 100);
+      showMsg('toolMsg', '✅ 导出成功！共 ' + rows.length + ' 条记录', 'success');
+    } catch(e) {
+      showMsg('toolMsg', '导出失败：' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = '📥 导出全部到 Excel';
+    setTimeout(hideProgress, 2000);
+  };
+
+  // ======== 导入 Excel ========
+  window.doImport = async function(input) {
+    hideMsg('toolMsg');
+    var file = input.files[0];
+    if (!file) return;
+
+    var importBtn = document.querySelector('.btn-primary');
+    importBtn.disabled = true; importBtn.textContent = '导入中...';
+
+    try {
+      showProgress('读取 Excel 文件...', 5);
+      var buf = await file.arrayBuffer();
+      var wb = XLSX.read(buf, { type: 'array' });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rawRows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      if (rawRows.length === 0) {
+        showMsg('toolMsg', 'Excel 中没有数据', 'info');
+        importBtn.disabled = false; importBtn.textContent = '📤 从 Excel 导入恢复';
+        hideProgress(); return;
+      }
+
+      function cell(row) {
+        for (var i = 1; i < arguments.length; i++) {
+          var n = arguments[i];
+          if (row[n] !== undefined && String(row[n]).trim() !== '') return String(row[n]).trim();
+        }
+        return '';
+      }
+
+      var records = rawRows.map(function(r) {
+        return {
+          category: cell(r, '分类', '类别', 'category'),
+          question: cell(r, '标题', '问题描述', 'question', '问题'),
+          solution: cell(r, '核心内容', '处理方法', '解决方案', 'solution', '内容', '答案'),
+          remark: cell(r, '补充说明', '备注', 'remark'),
+          submitter: cell(r, '创建人', '提交人', 'submitter', '创建者'),
+          proposer: cell(r, '提出人', 'proposer'),
+          record_time: cell(r, '记录时间', 'record_time', '时间')
+        };
+      });
+
+      showProgress('正在导入 ' + records.length + ' 条记录...', 20);
+      var result = await apiFetch('/api/import_records', {
+        method: 'POST',
+        body: JSON.stringify({ records: records })
+      });
+
+      if (result.status === 'success') {
+        var msg = '✅ 导入成功！共导入 ' + result.success + ' 条记录';
+        if (result.errors && result.errors.length) msg += '，' + result.errors.length + ' 条失败';
+        showMsg('toolMsg', msg, 'success');
+        showProgress('完成', 100);
+      } else {
+        showMsg('toolMsg', '导入失败：' + (result.msg || '未知错误'), 'error');
+      }
+    } catch(e) {
+      showMsg('toolMsg', '导入失败：' + e.message, 'error');
+    }
+    importBtn.disabled = false; importBtn.textContent = '📤 从 Excel 导入恢复';
+    input.value = '';
+    setTimeout(hideProgress, 2000);
+  };
+
+  // ======== 清空全部 ========
+  window.doClear = async function(btn) {
+    if (!confirm('⚠️ 确定要清空所有知识记录吗？\n\n此操作将永久删除全部记录，不可恢复！')) return;
+    if (!confirm('再次确认：真的要删除所有记录吗？')) return;
+    hideMsg('toolMsg');
+    btn.disabled = true; btn.textContent = '清空中...';
+    try {
+      showProgress('正在清空...', 30);
+      var result = await apiFetch('/api/clear_all', { method: 'POST' });
+      if (result.status === 'success') {
+        showMsg('toolMsg', '✅ 已清空所有知识记录', 'success');
+        showProgress('完成', 100);
+      } else {
+        showMsg('toolMsg', '清空失败：' + (result.msg || '未知错误'), 'error');
+      }
+    } catch(e) {
+      showMsg('toolMsg', '清空失败：' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = '🗑️ 清空全部知识记录';
+    setTimeout(hideProgress, 2000);
+  };
+
+  // ======== 手动备份 ========
+  window.doBackup = async function(btn) {
+    hideMsg('toolMsg');
+    btn.disabled = true; btn.textContent = '备份中...';
+    try {
+      showProgress('正在执行数据库备份...', 30);
+      var result = await apiFetch('/api/backup/manual', { method: 'POST' });
+      if (result.status === 'success') {
+        showMsg('toolMsg', '✅ 备份成功！' + result.file, 'success');
+        showProgress('完成', 100);
+        doRefreshBackupList();
+      } else {
+        showMsg('toolMsg', '❌ ' + (result.msg || '备份失败'), 'error');
+      }
+    } catch(e) {
+      showMsg('toolMsg', '备份失败：' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = '📦 手动备份数据库';
+    setTimeout(hideProgress, 2000);
+  };
+
+  // ======== 刷新备份列表（默认折叠，超3条折叠） ========
+  var _backupFiles = [];
+  window.doRefreshBackupList = async function(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = '加载中...'; }
+    try {
+      var result = await apiFetch('/api/backup/list', { method: 'GET' });
+      if (result.status === 'success' && result.files && result.files.length > 0) {
+        _backupFiles = result.files;
+        renderBackupList();
+      } else {
+        _backupFiles = [];
+        document.getElementById('backupList').innerHTML = '<div style="text-align:center;padding:16px;color:#999;font-size:13px;">暂无备份文件</div>';
+        document.getElementById('backupListCollapse').style.display = 'none';
+      }
+    } catch(e) {
+      document.getElementById('backupList').innerHTML = '<div style="text-align:center;padding:16px;color:#d93025;font-size:13px;">加载失败</div>';
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 刷新备份列表'; }
+  };
+
+  var _backupExpanded = false;
+  function renderBackupList() {
+    var files = _backupFiles;
+    var listEl = document.getElementById('backupList');
+    var limit = _backupExpanded ? files.length : 3;
+    var html = '<div style="font-size:13px;color:#555;margin-bottom:6px;">可用备份（共' + files.length + '个）：</div>';
+    for (var i = 0; i < Math.min(limit, files.length); i++) {
+      var f = files[i];
+      var sizeKB = (f.size / 1024).toFixed(0);
+      var d = new Date(f.mtime * 1000);
+      var dateStr = d.getFullYear() + '-' +
+        ('0'+(d.getMonth()+1)).slice(-2) + '-' +
+        ('0'+d.getDate()).slice(-2) + ' ' +
+        ('0'+d.getHours()).slice(-2) + ':' +
+        ('0'+d.getMinutes()).slice(-2);
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f7f8fa;border-radius:6px;margin-bottom:6px;font-size:13px;">' +
+        '<div style="flex:1;overflow:hidden;">' +
+        '<div style="color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + f.name + '</div>' +
+        '<div style="color:#999;font-size:11px;">' + sizeKB + ' KB · ' + dateStr + '</div></div>' +
+        '<button class="btn-sm btn-danger" style="flex-shrink:0;margin-left:8px;" onclick="doRestore(\'' + f.name + '\',this)">恢复</button></div>';
+    }
+    listEl.innerHTML = html;
+    var collapseEl = document.getElementById('backupListCollapse');
+    if (files.length > 3) {
+      collapseEl.style.display = 'block';
+      document.getElementById('toggleBackupBtn').textContent = _backupExpanded ? '收起' : '展开全部备份（' + (files.length - 3) + '个）';
+    } else {
+      collapseEl.style.display = 'none';
+    }
+  }
+
+  window.toggleBackupList = function() {
+    _backupExpanded = !_backupExpanded;
+    renderBackupList();
+  };
+
+  // ======== 恢复备份 ========
+  window.doRestore = async function(filename, btn) {
+    hideMsg('toolMsg');
+    if (!confirm('⚠️ 确定要从备份文件恢复吗？\n\n此操作将清空当前所有数据！\n\n文件：' + filename)) return;
+    if (!confirm('再次确认：真的要恢复此备份吗？')) return;
+    btn.disabled = true; btn.textContent = '恢复中...';
+    try {
+      showProgress('正在恢复数据（可能需要1-2分钟）...', 20);
+      var result = await apiFetch('/api/backup/restore', {
+        method: 'POST',
+        body: JSON.stringify({ filename: filename })
+      });
+      if (result.status === 'success') {
+        showMsg('toolMsg', '✅ 恢复成功！系统已重新初始化', 'success');
+        showProgress('完成', 100);
+      } else {
+        showMsg('toolMsg', '❌ ' + (result.msg || '恢复失败'), 'error');
+      }
+    } catch(e) {
+      showMsg('toolMsg', '恢复失败：' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = '恢复';
+    setTimeout(hideProgress, 2000);
+  };
+
+  // ======== 初始化表结构（空库建表） ========
+  window.doInitTables = async function(btn) {
+    hideMsg('toolMsg');
+    if (!confirm('⚠️ 初始化表结构将创建缺失的数据库表（已有表不会被影响）。\n适用于误删库后重新建表。确定继续？')) return;
+    btn.disabled = true; btn.textContent = '建表中...';
+    try {
+      showProgress('正在创建表结构...', 30);
+      var result = await apiFetch('/api/backup/init_tables', { method: 'POST' });
+      if (result.status === 'success') {
+        showMsg('toolMsg', '✅ ' + result.msg, 'success');
+        showProgress('完成', 100);
+      } else {
+        showMsg('toolMsg', '❌ ' + (result.msg || '建表失败'), 'error');
+      }
+    } catch(e) {
+      showMsg('toolMsg', '建表失败：' + e.message, 'error');
+    }
+    btn.disabled = false; btn.textContent = '🏗️ 初始化数据库表结构（空库建表用）';
+    setTimeout(hideProgress, 2000);
+  };
+
+  // ======== 进度条 ========
+  function showProgress(text, pct) {
+    var wrap = document.getElementById('progressWrap');
+    wrap.classList.add('show');
+    document.getElementById('progressInner').style.width = pct + '%';
+    document.getElementById('progressText').textContent = text;
+  }
+  function hideProgress() {
+    document.getElementById('progressWrap').classList.remove('show');
+  }
+})();
+</script>
+</body>
+</html>

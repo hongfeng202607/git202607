@@ -1,0 +1,694 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>V07.5.12 操作说明书</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
+        body { background: #f0f4f8; padding: 30px 20px; }
+        .wrap { max-width: 1100px; margin: 0 auto; }
+        h1 { text-align: center; color: #165DFF; font-size: 28px; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #86909c; font-size: 14px; margin-bottom: 30px; }
+        .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(22,93,255,.08); padding: 28px; margin-bottom: 20px; }
+        .card h2 { color: #1d2129; font-size: 20px; margin-bottom: 16px; border-left: 4px solid #165DFF; padding-left: 12px; }
+        .card h3 { color: #165DFF; font-size: 16px; margin: 20px 0 8px; }
+        .card h4 { color: #333; font-size: 14px; margin: 12px 0 6px; font-weight: bold; padding-left: 12px; border-left: 3px solid #dcdfe6; }
+        .card p { color: #333; line-height: 1.9; font-size: 14px; margin-bottom: 8px; }
+        .card ul, .card ol { padding-left: 24px; color: #333; line-height: 1.9; font-size: 14px; }
+        .card li { margin-bottom: 6px; }
+        .step-box { background: #f7f8fa; border-radius: 8px; padding: 16px 20px; margin: 12px 0; }
+        .step-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+        .step-num { background: #165DFF; color: #fff; border-radius: 50%; width: 26px; height: 26px; min-width: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; margin-top: 1px; }
+        .step-content { flex: 1; font-size: 14px; color: #333; line-height: 1.8; }
+        .step-content strong { color: #165DFF; }
+        .tip { background: #e8f3ff; border-left: 4px solid #165DFF; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #444; margin: 10px 0; }
+        .warn { background: #fff7e6; border-left: 4px solid #faad14; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #444; margin: 10px 0; }
+        .success { background: #f0fff4; border-left: 4px solid #00b42a; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #444; margin: 10px 0; }
+        .role-tag { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+        .role-admin { background: #ff4a4a; color: #fff; }
+        .role-editor { background: #ff7d00; color: #fff; }
+        .role-user { background: #86909c; color: #fff; }
+        .role-custom { background: #764ba2; color: #fff; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+        th { background: #f7f8fa; color: #333; padding: 8px 12px; border: 1px solid #eee; text-align: left; }
+        td { padding: 8px 12px; border: 1px solid #eee; vertical-align: top; line-height: 1.8; }
+        code { background: #f0f4f8; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: Consolas, monospace; color: #c7254e; }
+        .footer { text-align: center; color: #999; font-size: 13px; margin-top: 30px; padding-bottom: 20px; }
+        .icon-section { font-size: 20px; margin-right: 6px; }
+        .qa-item { border: 1px solid #eee; border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+        .qa-q { color: #165DFF; font-weight: bold; font-size: 14px; margin-bottom: 6px; }
+        .qa-a { color: #444; font-size: 14px; line-height: 1.8; }
+        .tag-new { background: #00b42a; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+        .tag-opt { background: #ff7d00; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+        .tag-fix { background: #f53f3f; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>📖 智行知识库 V07.5.12 操作说明书</h1>
+    <div class="subtitle">用户操作指南 · 红枫 · 2026年5月24日（智能款·增AI配置·架构升级版）</div>
+
+    <!-- ==================== 1. 快速开始 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🚀</span>1. 快速开始</h2>
+        <p>智行知识库是企业内部运维知识管理系统，支持知识录入、搜索、分类管理、智能问答和附件管理。V07.5.12 底层数据库升级为 PostgreSQL，权限体系升级为 RBAC，新增提出人字段与角色管理功能。</p>
+
+        <h3>系统访问</h3>
+        <p>浏览器打开：<code>http://服务器IP:8901</code>（局域网内其他电脑同样可访问）</p>
+        <div class="tip">💡 推荐浏览器：Chrome / Edge。登录状态保持7天，关闭浏览器不会退出。</div>
+
+        <h3>默认账号</h3>
+        <table>
+            <tr><th>账号</th><th>密码</th><th>角色</th><th>说明</th></tr>
+            <tr><td>admin</td><td>123456</td><td><span class="role-tag role-admin">管理员</span></td><td>超级管理员，全部权限，首次使用请及时修改密码</td></tr>
+        </table>
+    </div>
+
+    <!-- ==================== 2. 登录与账号 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🔐</span>2. 登录与账号</h2>
+
+        <h3>2.1 登录操作</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">在登录页输入<strong>账号</strong>和<strong>密码</strong></div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">如希望下次自动填入密码，勾选<strong>「记住密码」</strong>复选框</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">点击<strong>「立即登录」</strong>，登录成功自动进入主界面</div>
+            </div>
+        </div>
+        <div class="tip">💡 账号始终被记住；密码只有勾选「记住密码」才会保存（Base64编码）；未勾选时退出或切换账号会清空密码框。</div>
+
+        <h3>2.2 修改密码</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">点击右上角<strong>「修改密码」</strong>按钮</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">依次输入<strong>原密码</strong>、<strong>新密码（≥6位）</strong>、<strong>确认新密码</strong></div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">点击<strong>「确认修改」</strong>，系统将强制重新登录</div>
+            </div>
+        </div>
+
+        <h3>2.3 退出登录</h3>
+        <p>点击右上角<strong>「退出登录」</strong>按钮，当前 Token 立即失效。</p>
+
+        <h3>2.4 角色与权限说明</h3>
+        <p>V07.5.12 采用 RBAC 权限体系，每个角色绑定一组权限码，管理员可新增自定义角色。系统内置3个角色：</p>
+        <table>
+            <tr><th>角色</th><th>能做什么</th><th>不能做什么</th></tr>
+            <tr>
+                <td><span class="role-tag role-admin">管理员</span></td>
+                <td>全部功能：查看、新增、编辑、删除、分类管理、账号管理、角色管理、回收站（含永久删除）、AI接口配置</td>
+                <td>—</td>
+            </tr>
+            <tr>
+                <td><span class="role-tag role-editor">编辑员</span></td>
+                <td>查看、新增、编辑、进入回收站、恢复记录、上传/下载附件、新增分类、修改分类名称、使用AI功能</td>
+                <td>不能删除记录、不能永久删除、不能管理账号、不能管理角色、不能配置AI接口</td>
+            </tr>
+            <tr>
+                <td><span class="role-tag role-user">普通用户</span></td>
+                <td>查看所有知识、下载附件、使用智能搜索助手、标记/取消星标</td>
+                <td>所有写操作按钮均置灰不可点击</td>
+            </tr>
+            <tr>
+                <td><span class="role-tag role-custom">自定义角色</span></td>
+                <td colspan="2">管理员可自定义角色名称与权限组合，授予用户，权限精确到功能模块级别</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ==================== 3. 知识搜索 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🔍</span>3. 知识搜索</h2>
+
+        <h3>3.1 基本搜索</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">在左侧<strong>搜索框</strong>输入关键词（如"打印机"、"域控账号"、"VPN"）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">按<strong>回车键</strong>或点击<strong>「搜索」</strong>按钮</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">结果按<strong>加权相关度排序</strong>（标题相似度60% + 内容相似度40%），最相关的优先展示；每条显示：分类标签、提出人、创建人、标题、核心内容、补充说明</div>
+            </div>
+        </div>
+        <div class="tip">💡 V07.5.12 搜索结果改为<strong>相关度排序</strong>（而非V07.5.10的ID倒序），更贴合实际查询需求。</div>
+        <div class="tip">💡 也可以直接输入记录的<strong>纯数字ID</strong>（如"42"）快速定位某条记录。</div>
+        <div class="tip">💡 搜索范围新增 <strong>提出人（proposer）</strong> 字段，可通过提出人姓名检索相关记录。</div>
+
+        <h3>3.2 分类筛选</h3>
+        <p>在搜索框右侧的<strong>下拉菜单</strong>选择"全部分类"或某个具体分类，结合关键词缩小范围。切换分类后自动刷新。</p>
+
+        <h3>3.3 日期范围筛选</h3>
+        <p>使用搜索框下方的<strong>自定义日历选择器</strong>（紫色渐变面板），分别选择"起始日期"和"结束日期"，过滤指定时间段的记录。点击<strong>「清除日期」</strong>取消筛选。</p>
+
+        <h3>3.4 搜索建议（联想提示）</h3>
+        <p>输入关键词后自动弹出<strong>最多6条</strong>联想建议（来自已有记录标题），点击建议项可直接定位到该记录。</p>
+
+        <h3>3.5 分页与每页条数</h3>
+        <ul>
+            <li>搜索结果底部显示分页控件，可点击页码跳转</li>
+            <li>右侧下拉可选择每页显示 <strong>10 / 20 / 50</strong> 条</li>
+            <li>结果区右侧有<strong>↑ 回到顶部</strong>按钮（滚动超过300px后出现）</li>
+        </ul>
+
+        <h3>3.6 核心内容展示</h3>
+        <p>每条记录的"核心内容"以<strong>代码块格式</strong>展示（灰底、Consolas等宽字体），SQL 等技术关键词自动蓝色高亮；搜索关键词在结果中以<strong>红色高亮</strong>标注。右上角 📋 按钮可一键复制内容。</p>
+
+        <h3>3.7 查看附件</h3>
+        <p>若记录有附件，卡片内会显示<strong>「📎 查看附件」</strong>蓝色按钮，<strong>所有登录用户均可点击</strong>，在弹出浮层中查看附件列表、预览图片/文本、下载文件。</p>
+
+        <h3>3.8 ⭐ 星标操作</h3>
+        <p>每条记录左上角显示星标按钮（☆ 未标记 / ⭐ 已标记），<strong>所有登录用户均可点击切换</strong>。星标记录会在搜索结果中优先展示在最前面。星标为团队共享，不区分个人。</p>
+    </div>
+
+    <!-- ==================== 4. 智能搜索助手 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🔮</span>4. 智能搜索助手</h2>
+        <p>右下角悬浮的 <strong>🔮</strong> 按钮是智能搜索助手入口，所有用户均可使用，适合自然语言提问场景。</p>
+
+        <h3>4.1 使用方法</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">点击右下角<strong>🔮 按钮</strong>，右侧滑出搜索面板</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">在面板搜索框输入问题，如"打印机怎么加碳粉"，无需按回车，自动实时搜索（防抖300ms）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">系统先立即展示<strong>加权相关度排序的关键词匹配结果</strong>（蓝色卡片），同时异步调用 AI 分析</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">AI 分析完成后，在列表顶部追加展示<strong>蓝底 AI 摘要回答</strong>，下方显示「📋 参考记录」（含提出人字段）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">5</div>
+                <div class="step-content">点击任意结果条目，可跳转到主搜索区精确定位该记录（关闭面板+按ID搜索）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">6</div>
+                <div class="step-content">点击面板右上角 <strong>✕</strong>，或点击左侧半透明遮罩层，关闭面板</div>
+            </div>
+        </div>
+        <div class="tip">💡 AI摘要基于知识库现有内容生成，120字内简洁回答；若知识库无相关内容，AI明确返回"未找到"，面板不展示误导内容。</div>
+        <div class="warn">⚠️ AI 摘要功能依赖配置有效的 AI API Key。未配置时，面板仅展示关键词匹配结果，不展示 AI 摘要。</div>
+    </div>
+
+    <!-- ==================== 5. 新增知识 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">📝</span>5. 新增知识 <span class="role-tag role-admin">管理员</span><span class="role-tag role-editor">编辑员</span></h2>
+
+        <h3>5.1 手动录入</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">在右侧"新增知识"表单中，从下拉框选择<strong>分类</strong></div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">填写<strong>提出人</strong>（选填）：指报障人、申请人、当事人等提出问题的人，与"记录人"区分</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">填写<strong>标题（必填）</strong>：一句话描述问题或主题</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">填写<strong>核心内容（必填）</strong>：处理步骤、解决方案、技术细节</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">5</div>
+                <div class="step-content">填写<strong>补充说明</strong>（选填）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">6</div>
+                <div class="step-content">如需附件，点击<strong>「📎 上传附件」</strong>按钮（需先填写标题和核心内容）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">7</div>
+                <div class="step-content">点击<strong>「保存」</strong>，保存成功后表单自动清空；<strong>记录人自动填写为当前登录账号</strong></div>
+            </div>
+        </div>
+        <div class="tip">💡 V07.5.12 新增「提出人」字段，表示问题/需求的发起者（如报修的同事），与「记录人」（系统自动记录为当前登录账号）区分开来。</div>
+        <div class="tip">💡 附件支持格式：txt / pdf / png / jpg / jpeg / gif / doc / docx / xls / xlsx / html / htm，单文件最大 16MB。</div>
+
+        <h3>5.2 AI智能录入（推荐）</h3>
+        <p>适合将聊天记录、邮件、故障日志等杂乱文本一键转换为标准知识条目，V07.5.12 新增提出人字段的自动提取。</p>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">点击表单顶部的<strong>「🤖 AI快捷智能录入」</strong>展开折叠面板（点击标题区域可收起/展开）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">将原始文本<strong>粘贴到文本框</strong>（支持任意格式：聊天记录、操作步骤、邮件正文等）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">点击<strong>「🤖 AI智能解析并回填表单」</strong>，等待 AI 分析（约3~10秒，按钮显示"⏳ AI解析中..."）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">AI 自动将<strong>分类、提出人、标题、核心内容</strong>填入下方表单（V07.5.12 新增提出人提取）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">5</div>
+                <div class="step-content"><strong>核对表单内容</strong>，如有不准确处手动调整（AI结果仅供参考）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">6</div>
+                <div class="step-content">点击<strong>「保存」</strong>提交，系统不会自动提交</div>
+            </div>
+        </div>
+        <div class="warn">⚠️ AI解析结果仅供参考，请务必核对准确性后再保存。</div>
+        <div class="tip">💡 若 AI 返回 JSON 被截断（max_tokens限制），系统会自动尝试修复，修复失败则提示重试。</div>
+    </div>
+
+    <!-- ==================== 6. 编辑知识 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">✏️</span>6. 编辑知识 <span class="role-tag role-admin">管理员</span><span class="role-tag role-editor">编辑员</span></h2>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">在搜索结果列表找到要编辑的记录，点击右下角<strong>「编辑」</strong>蓝色按钮</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">在弹出的<strong>编辑弹窗</strong>中修改分类、提出人、标题、核心内容、补充说明</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">如需管理附件，在弹窗附件区点击「📎 上传附件」追加，或点击文件名右侧 <strong>✕</strong> 删除</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">点击<strong>「保存」</strong>，系统自动触发数据库备份（pg_dump 导出 SQL 文件）</div>
+            </div>
+        </div>
+        <div class="tip">💡 编辑保存后，系统自动使用 pg_dump 备份数据库到 <code>Backup/</code> 目录，最多保留10个备份文件。</div>
+    </div>
+
+    <!-- ==================== 7. 删除与回收站 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🗑️</span>7. 删除与回收站</h2>
+
+        <h3>7.1 删除记录（软删除）<span class="role-tag role-admin">管理员</span></h3>
+        <p>点击记录右下角<strong>红色「删除」</strong>按钮，确认后记录移入回收站，不立即销毁，可恢复。</p>
+
+        <h3>7.2 查看回收站 <span class="role-tag role-admin">管理员</span><span class="role-tag role-editor">编辑员</span></h3>
+        <p>点击右上角<strong>「🗑️回收站」</strong>按钮，在弹窗中查看所有已删除记录，显示总条数。</p>
+
+        <h3>7.3 恢复记录 <span class="role-tag role-admin">管理员</span><span class="role-tag role-editor">编辑员</span></h3>
+        <p>在回收站弹窗中，点击对应记录的<strong>绿色「恢复」</strong>按钮，记录恢复正常状态。</p>
+
+        <h3>7.4 永久删除 <span class="role-tag role-admin">管理员</span></h3>
+        <div class="warn">⚠️ 永久删除后数据不可恢复！</div>
+        <p>在回收站中，点击<strong>红色「永久删除」</strong>按钮，确认后该记录及其所有附件文件彻底删除，同时触发数据库备份。</p>
+        <div class="tip">💡 编辑员在回收站中看到的「永久删除」按钮为置灰状态，无法点击，须联系管理员操作。</div>
+    </div>
+
+    <!-- ==================== 8. 分类管理 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">📁</span>8. 分类管理</h2>
+
+        <h3>进入分类管理 <span class="role-tag role-admin">管理员</span></h3>
+        <p>点击右侧"新增知识"区域分类下拉框旁的<strong>「分类管理」</strong>按钮（仅管理员可见）。</p>
+
+        <table>
+            <tr><th>操作</th><th>说明</th><th>权限</th></tr>
+            <tr><td>置顶</td><td>将该分类移至列表最顶部</td><td>管理员</td></tr>
+            <tr><td>↑ / ↓</td><td>上移/下移一位，调整排列顺序</td><td>管理员</td></tr>
+            <tr><td>修改名称</td><td>直接在输入框修改，保存后生效</td><td>管理员（编辑员后端禁止减少分类）</td></tr>
+            <tr><td>+ 新增分类</td><td>末尾追加空白分类，填写名称后保存</td><td>管理员</td></tr>
+            <tr><td>删除</td><td>删除指定分类项</td><td>仅管理员</td></tr>
+            <tr><td>保存</td><td>提交所有变更，自动校验重复名称</td><td>—</td></tr>
+            <tr><td>取消</td><td>关闭弹窗，放弃所有未保存变更，自动从服务器恢复原始分类</td><td>—</td></tr>
+        </table>
+        <div class="warn">⚠️ 分类名称不允许重复，保存前系统自动校验。</div>
+    </div>
+
+    <!-- ==================== 9. 账号管理 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">👥</span>9. 账号管理 <span class="role-tag role-admin">管理员</span></h2>
+        <p>点击右上角<strong>「账号管理」</strong>按钮（仅管理员可见）。</p>
+
+        <h3>9.1 新增账号</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">填写<strong>账号名</strong>（不可与已有账号重复）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">填写<strong>密码</strong>（不填则默认 <code>123456</code>）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">在下拉框选择<strong>角色</strong>：普通用户 / 编辑员 / 管理员 / 或自定义角色（V07.5.12 新增）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">点击<strong>「新增」</strong></div>
+            </div>
+        </div>
+
+        <h3>9.2 账号操作</h3>
+        <table>
+            <tr><th>操作</th><th>说明</th><th>备注</th></tr>
+            <tr><td>重置密码</td><td>将该账号密码重置为 <code>123456</code></td><td>该账号下次需用新密码登录</td></tr>
+            <tr><td>禁用 / 启用</td><td>禁用后该账号无法登录，已有 Token 下次请求时失效</td><td>可随时重新启用</td></tr>
+            <tr><td>修改角色 <span class="tag-new">V07.5.12新增</span></td><td>修改该用户绑定的角色（权限立即变更）</td><td>修改后强制下线，需重新登录</td></tr>
+            <tr><td>删除</td><td>彻底删除账号，同时注销所有登录 Token</td><td>admin 超级管理员无法被删除</td></tr>
+        </table>
+        <div class="warn">⚠️ 删除账号后不可恢复，该账号历史记录的创建人字段不受影响，仅删除登录资格。</div>
+        <div class="tip">💡 非超级管理员（admin）无法操作其他管理员账号（禁用/删除/修改角色）。</div>
+    </div>
+
+    <!-- ==================== 10. 角色管理（V07.5.12新增） ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🎭</span>10. 角色管理 <span class="role-tag role-admin">管理员</span> <span class="tag-new">V07.5.12新增</span></h2>
+        <p>点击右上角<strong>「角色管理」</strong>按钮（仅管理员可见）。支持查看、新增、编辑、删除自定义角色，动态调整权限组合。</p>
+
+        <h3>10.1 查看角色与权限</h3>
+        <p>角色管理界面展示所有角色（系统内置 + 自定义），每个角色显示：名称、描述、绑定用户数、已授权限列表。</p>
+
+        <h3>10.2 新增自定义角色</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">点击<strong>「新增角色」</strong>按钮</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">填写<strong>角色名称</strong>（不可重复）和<strong>描述</strong></div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">勾选该角色拥有的<strong>权限码</strong>（按分组展示，可多选）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">点击<strong>「保存」</strong>，新角色立即可用，可在账号管理中绑定给用户</div>
+            </div>
+        </div>
+
+        <h3>10.3 编辑角色权限</h3>
+        <p>点击角色右侧<strong>「编辑」</strong>按钮，修改名称/描述/权限组合，保存后立即生效（已绑定该角色的用户权限同步变更）。</p>
+        <div class="warn">⚠️ 系统内置角色（admin/editor/user）的<strong> admin 角色</strong>只有超级管理员本人可以编辑；其他系统角色可由管理员调整。</div>
+
+        <h3>10.4 删除自定义角色</h3>
+        <p>点击自定义角色右侧<strong>「删除」</strong>按钮，系统检查：若该角色下仍有用户绑定，拒绝删除并提示用户数量；无用户绑定才可删除。</p>
+        <div class="tip">💡 系统内置角色（admin/editor/user）不可删除。</div>
+
+        <h3>10.5 可用权限码列表</h3>
+        <table>
+            <tr><th>权限码</th><th>权限名称</th><th>分组</th></tr>
+            <tr><td>knowledge.view</td><td>查看知识</td><td>知识管理</td></tr>
+            <tr><td>knowledge.add</td><td>新增知识</td><td>知识管理</td></tr>
+            <tr><td>knowledge.edit</td><td>编辑知识</td><td>知识管理</td></tr>
+            <tr><td>knowledge.delete</td><td>删除知识（移入回收站）</td><td>知识管理</td></tr>
+            <tr><td>knowledge.permanent_del</td><td>永久删除</td><td>知识管理</td></tr>
+            <tr><td>recycle.view</td><td>查看回收站</td><td>回收站</td></tr>
+            <tr><td>recycle.restore</td><td>恢复回收站记录</td><td>回收站</td></tr>
+            <tr><td>attachment.upload</td><td>上传附件</td><td>附件管理</td></tr>
+            <tr><td>attachment.delete</td><td>删除附件</td><td>附件管理</td></tr>
+            <tr><td>category.manage</td><td>管理分类</td><td>分类管理</td></tr>
+            <tr><td>user.manage</td><td>管理用户账号</td><td>用户管理</td></tr>
+            <tr><td>settings.view</td><td>查看系统设置</td><td>系统设置</td></tr>
+            <tr><td>ai.manage</td><td>管理AI接口配置</td><td>AI功能</td></tr>
+            <tr><td>ai.use</td><td>使用AI功能</td><td>AI功能</td></tr>
+            <tr><td>settings.dedup</td><td>查重设置</td><td>系统设置</td></tr>
+            <tr><td>settings.data_perm</td><td>数据权限设置</td><td>系统设置</td></tr>
+        </table>
+        <div class="tip">💡 <strong>设置按钮入口</strong>：拥有 settings.dedup 或 settings.data_perm 或 ai.manage 任一权限即可见设置按钮。各设置分区独立受控：查重需 settings.dedup，数据权限需 settings.data_perm，AI配置需 ai.manage。</div>
+    </div>
+
+    <!-- ==================== 11. AI接口配置 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🤖</span>11. AI接口配置 <span class="role-tag role-admin" style="background:#764ba2;">超级管理员(admin)</span></h2>
+        <p>点击右上角<strong>「🤖 AI配置」</strong>按钮（需拥有 <code>ai.manage</code> 权限，默认仅 admin 账号可见）。</p>
+
+        <h3>11.1 配置项说明</h3>
+        <table>
+            <tr><th>配置项</th><th>说明</th><th>默认值</th></tr>
+            <tr><td>API 地址</td><td>AI 接口的完整 URL，支持任意 OpenAI 兼容格式接口</td><td>需手动配置</td></tr>
+            <tr><td>API Key</td><td>接口认证密钥，密码框输入；留空则保留原有Key不修改</td><td>无（需手动配置）</td></tr>
+            <tr><td>模型名称</td><td>调用的模型 ID，如 deepseek-chat / qwen3-max</td><td>需手动配置</td></tr>
+        </table>
+
+        <h3>11.2 操作步骤</h3>
+        <div class="step-box">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">点击「🤖 AI配置」按钮，弹窗自动读取当前配置（API Key仅显示前4后4，保护密钥安全）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">填入或修改各配置项（API Key 留空 = 不修改，填入新值 = 覆盖）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">点击<strong>「🔌 测试连接」</strong>，验证 AI 接口是否可正常访问（约3~10秒）</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-content">测试成功后，点击<strong>「保存配置」</strong>，配置写入数据库，立即生效，无需重启</div>
+            </div>
+        </div>
+        <div class="tip">💡 未配置 API Key 时，AI录入和AI搜索摘要功能降级：前者返回错误提示，后者仅展示关键词匹配结果，系统其他功能正常。</div>
+        <div class="tip">💡 支持切换到其他 OpenAI 兼容 API，如 DeepSeek、阿里云百炼等，只需修改 API 地址、Key 和模型名称。</div>
+    </div>
+
+    <!-- ==================== 12. 附件管理 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">📎</span>12. 附件管理</h2>
+
+        <h3>12.1 上传附件</h3>
+        <ul>
+            <li><strong>新增知识时：</strong>先填写标题和核心内容，再点击附件区「📎 上传附件」，选择文件后立即上传，保存时自动绑定到新记录。</li>
+            <li><strong>编辑时追加：</strong>打开编辑弹窗，点击附件区「📎 上传附件」，上传完成后自动绑定（无需再次点击保存）。</li>
+        </ul>
+        <div class="warn">⚠️ 新增知识时，必须先填写「标题」和「核心内容」才能上传附件，否则提示"请将上方信息录入完整"。</div>
+
+        <h3>12.2 查看与下载附件</h3>
+        <ul>
+            <li>在搜索结果卡片中，点击<strong>「📎 查看附件」</strong>按钮，弹出附件浮层</li>
+            <li>支持预览的格式：png / jpg / jpeg / gif（图片）、txt / html / htm（文本源码）、pdf（iframe嵌入）</li>
+            <li>点击「下载」按钮，文件以原始名称下载到本地</li>
+            <li><strong>所有登录用户均可查看和下载</strong></li>
+        </ul>
+
+        <h3>12.3 支持格式与限制</h3>
+        <table>
+            <tr><th>支持格式</th><th>单文件大小限制</th></tr>
+            <tr><td>txt / pdf / png / jpg / jpeg / gif / doc / docx / xls / xlsx / html / htm</td><td>最大 16MB</td></tr>
+        </table>
+    </div>
+
+    <!-- ==================== 13. 常见问题 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">❓</span>13. 常见问题</h2>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 登录时提示"账号或密码错误"？</div>
+            <div class="qa-a">A: 初始密码为 <code>123456</code>。如忘记密码，请联系管理员执行「重置密码」，重置后恢复为 <code>123456</code>。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 登录后提示"登录已过期"？</div>
+            <div class="qa-a">A: Token 有效期7天，过期后需重新登录。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 搜索不到想要的内容？</div>
+            <div class="qa-a">A: 换一个关键词，或缩短关键词（如"域控"而非"域控管理员账号"）。也可按提出人姓名搜索。还可尝试右下角🔮智能搜索助手，用自然语言提问。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 搜索结果排序和以前不同？</div>
+            <div class="qa-a">A: V07.5.12 搜索结果改为按<strong>加权相关度排序</strong>（标题相似度60% + 内容相似度40%），比旧版ID倒序更贴合实际查询需求。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 「提出人」和「记录人」有什么区别？</div>
+            <div class="qa-a">A: 「提出人」是报障/申请/当事人（手动填写或AI自动识别）；「记录人」是当前登录并提交知识的系统账号（自动记录）。两者分开管理，便于追溯。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: AI智能录入解析结果不准确？</div>
+            <div class="qa-a">A: 原始文本越清晰结果越准确。解析后务必核对表单内容，手动调整后再保存。若AI返回"解析异常"，请重试（可能是JSON被截断，系统会自动尝试修复，修复失败则提示重试）。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: AI功能不可用（点击后报错或无响应）？</div>
+            <div class="qa-a">A: 请联系超级管理员（admin账号）检查「🤖 AI配置」中 API Key 是否有效，可点击「测试连接」验证。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 如何新增自定义角色？</div>
+            <div class="qa-a">A: 管理员点击「角色管理」→「新增角色」→填写名称+描述→勾选权限码→保存。然后在「账号管理」中将用户的角色改为新角色即可。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 修改用户角色后，用户立刻被下线了？</div>
+            <div class="qa-a">A: 这是正常行为。修改角色后系统会注销该用户所有 Token，要求重新登录，确保新权限立即生效。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 如何切换 AI 接口到 DeepSeek 或其他模型？</div>
+            <div class="qa-a">A: 管理员（admin账号）点击「🤖 AI配置」，修改 API 地址、API Key 和模型名称，测试连接成功后保存即可，无需重启服务。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 仪表盘的"最新动态"显示的是什么？</div>
+            <div class="qa-a">A: 显示最近8条业务事件，包括知识新增/编辑/删除/恢复、用户登录/登出、批量导入、备份恢复、角色变更等。AI调试、自动备份等系统运维日志不会显示。每条动态带有彩色图标标识动作类型。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 仪表盘的卡片顺序可以调整吗？</div>
+            <div class="qa-a">A: 可以。按住任意卡片拖动到目标位置即可换位，顺序会自动保存在浏览器中，下次打开保持不变。</div>
+        </div>
+
+        <div class="qa-item">
+            <div class="qa-q">Q: 为什么普通用户看不到全部知识记录？</div>
+            <div class="qa-a">A: 管理员可能开启了<strong>数据权限</strong>功能。开启后，普通用户只能查看自己创建的知识和被授权查看的知识。管理员和超级管理员不受此限制。如需查看更多记录，请联系管理员授权。</div>
+        </div>
+    </div>
+
+    <!-- ==================== 14. 界面布局说明 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🖥️</span>14. 界面布局一览</h2>
+        <table>
+            <tr><th>区域</th><th>位置</th><th>功能说明</th></tr>
+            <tr><td>顶部标题栏</td><td>页面最上方</td><td>系统名称Logo、用户信息（账号+角色）、修改密码、账号管理、角色管理（管理员）、回收站、AI配置（ai.manage权限）、退出登录</td></tr>
+            <tr><td>仪表盘</td><td>标题栏下方</td><td>6卡片仪表盘：总知识数（含7天趋势迷你图）、本周新增、本月新增、星标数、分类分布环形图、最新动态（支持拖拽换位）</td></tr>
+            <tr><td>知识搜索（左侧）</td><td>主内容区左半部</td><td>搜索框+联想建议、分类选择、日期筛选、搜索结果（含星标/复制/编辑/删除/查看附件）、分页控件</td></tr>
+            <tr><td>新增知识（右侧）</td><td>主内容区右半部</td><td>AI录入面板（折叠）、分类+管理、录入表单（含提出人字段）、附件上传、保存按钮</td></tr>
+            <tr><td>🔮 智能助手</td><td>右下角悬浮</td><td>点击展开侧边搜索面板，实时搜索 + AI 摘要（按相关度排序）</td></tr>
+            <tr><td>↑ 回到顶部</td><td>搜索结果区右侧</td><td>滚动超过300px后出现，点击回到顶部</td></tr>
+        </table>
+    </div>
+
+    <!-- ==================== 15. V07.5.12 新增功能与优化 ==================== -->
+    <div class="card">
+        <h2><span class="icon-section">🔧</span>15. V07.5.12 新增功能与优化</h2>
+
+        <h3>1. 数据管理集成 <span class="tag-new">新增</span></h3>
+        <p>顶部栏新增「⚒ 数据管理」按钮（仅管理员可见），点击弹出数据管理弹窗。</p>
+        <p>功能列表：导出全部到Excel、从Excel导入、清空全部记录、手动备份数据库、刷新备份列表、从备份恢复、删除备份文件、初始化数据库表结构、重置ID流水号。</p>
+        <div class="tip">💡 不再需要打开单独的 /tools 页面。</div>
+
+        <h3>2. AI 辅助编辑 <span class="tag-new">新增</span></h3>
+        <p>编辑知识弹窗底部新增「✨ AI优化」按钮。</p>
+        <p>用法：填写标题和核心内容后，点击 AI 优化，AI 自动优化措辞和表达，保持原意，结果自动填入表单。</p>
+        <div class="tip">💡 可多次点击尝试不同优化效果。</div>
+
+        <h3>3. 顶部栏与侧边栏优化 <span class="tag-opt">优化</span></h3>
+        <p>导航方式重构：PC端保持顶部栏布局，移动端改用侧边栏。</p>
+        <ul>
+            <li><strong>PC端顶部栏：</strong>行内保留修改密码🔑、回收站🗑️、设置⚙；管理类按钮收进「··· 更多 ▼」下拉菜单（👥账号管理、🎯角色管理、⚒数据管理）</li>
+            <li><strong>移动端侧边栏：</strong>点击头像👤弹出侧边栏，展示用户头像/姓名/角色，包含全部功能入口和退出按钮</li>
+            <li>所有按钮统一加图标，退出改为 🔌 电源图标</li>
+        </ul>
+
+        <h3>4. 性能与安全 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>数据权限开关添加 60 秒缓存</li>
+            <li>分类同步改为增量方式（编辑/新增时不扫描全表）</li>
+            <li>备份恢复路径环境变量化（KB_PG_BIN）</li>
+            <li>shell 命令改为列表传参消除注入风险</li>
+        </ul>
+
+        <h3>5. Bug 修复 <span class="tag-fix">修复</span></h3>
+        <ul>
+            <li>修复上传文件名 XSS 漏洞</li>
+            <li>修复数据库事务中止导致搜索 500 错误</li>
+            <li>修复恢复备份脚本用户配置错误</li>
+            <li>修复 auth.py SQL 注入风险</li>
+        </ul>
+
+        <h3>6. 分类体系调整 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>从 18 个专业分类调整为 10 个全公司通用分类</li>
+            <li>移除「默认分类」，兜底改为「其他」</li>
+            <li>旧有记录已自动迁移</li>
+        </ul>
+
+        <h3>7. 仪表盘改版 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>统计区域从2张数字卡升级为<strong>6卡片仪表盘</strong>：总知识数（含7天趋势图）、本周新增、本月新增、星标数、分类分布环形图、最新动态</li>
+            <li>4张统计卡渐变色背景（蓝/青/黄/紫），统一高度</li>
+            <li>分类分布：环形图 + 图例，最多8个分类 + "其他"聚合</li>
+            <li>最新动态：展示最近8条业务事件（新增/编辑/删除/恢复/登录等），每条带彩色动作图标，过滤AI调试和系统运维日志</li>
+            <li>支持<strong>拖拽换位</strong>：按住卡片拖动可调整顺序，位置自动保存到浏览器</li>
+        </ul>
+
+        <h3>8. 数据权限 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>按创建人隔离知识记录：普通用户仅可查看<strong>自己创建</strong>的知识和<strong>被授权</strong>查看的知识</li>
+            <li>管理员/超级管理员豁免，可查看全部知识</li>
+            <li>系统设置中可开关数据权限功能</li>
+            <li>支持授权管理：将其他创建人的知识查看权限授予指定用户</li>
+        </ul>
+
+        <h3>9. 操作日志可视化 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>数据管理弹窗内集成操作日志面板</li>
+            <li>支持分页浏览、关键词搜索、级别过滤</li>
+            <li>知识 CRUD 日志含标题和分类信息，操作更可追溯</li>
+        </ul>
+
+        <h3>10. 启动器优化 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>双击 launcher.py 启动时，从两个黑窗口合并为<strong>一个黑窗口</strong></li>
+            <li>Ctrl+C 或关闭窗口时自动清理残留进程</li>
+        </ul>
+
+        <h3>11. 换肤系统 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>系统设置内新增<strong>「换肤系统」</strong>面板（手型🎨图标），提供 12 种可选主题</li>
+            <li>主题包括：原始图片、彩虹渐变、三色呼吸、粒子渐变（默认）、深空星夜、极光漫射、深海气泡、霓虹网格、日落渐变、浅色气泡、矩阵代码雨、海洋波浪</li>
+            <li>选择后立即生效，设置自动保存到浏览器本地存储</li>
+            <li>系统设置面板采用<strong>手风琴（Accordion）布局</strong>：查重设置/AI配置/数据权限/换肤系统四个分区自由折叠展开</li>
+        </ul>
+
+        <h3>12. 设置面板改版 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>设置弹窗改为<strong>可拖拽移动</strong>，按住标题栏可拖动到任意位置</li>
+            <li>采用<strong>手风琴式折叠面板</strong>（Accordion）：查重设置 / AI配置 / 数据权限 / 换肤系统</li>
+            <li>查重设置支持：阈值滑杆（0-100%）、多字段勾选（标题/标题+内容双模式）</li>
+            <li>AI配置：URL + Key（脱敏展示，前4后4）+ Model，支持一键测试连接</li>
+            <li>数据权限：开关控制按创建人隔离知识，授权管理入口</li>
+            <li>换肤系统：12种主题预览网格，点击实时切换</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        红枫 · 智行知识库 · V07.5.12 智能款·增AI配置·架构升级版 操作说明书 · 2026年5月24日
+    </div>
+</div>
+</body>
+</html>
+
+

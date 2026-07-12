@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>V07.5.12 版本说明</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
+        body { background: #f0f4f8; padding: 30px 20px; }
+        .wrap { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #165DFF; font-size: 28px; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #86909c; font-size: 14px; margin-bottom: 30px; }
+        .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(22,93,255,.08); padding: 24px; margin-bottom: 20px; }
+        .card h2 { color: #1d2129; font-size: 20px; margin-bottom: 16px; border-left: 4px solid #165DFF; padding-left: 12px; }
+        .card h3 { color: #165DFF; font-size: 16px; margin: 16px 0 8px; }
+        .card p { color: #333; line-height: 1.8; font-size: 14px; margin-bottom: 8px; }
+        .card ul { padding-left: 24px; color: #333; line-height: 1.8; font-size: 14px; }
+        .card li { margin-bottom: 6px; }
+        .highlight { color: #FF4A4A; font-weight: 700; }
+        .tag-new { background: #00b42a; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+        .tag-opt { background: #165DFF; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+        .tag-fix { background: #ff4a4a; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+        .tag-arch { background: #764ba2; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+        th { background: #f7f8fa; color: #333; padding: 8px 12px; border: 1px solid #eee; text-align: left; }
+        td { padding: 8px 12px; border: 1px solid #eee; vertical-align: top; }
+        .footer { text-align: center; color: #999; font-size: 13px; margin-top: 30px; padding-bottom: 20px; }
+        code { background: #f0f4f8; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: Consolas, monospace; }
+        .badge-v { display: inline-block; background: #165DFF; color: #fff; font-size: 13px; padding: 3px 10px; border-radius: 12px; margin-left: 8px; }
+        .diff-add { background: #e6fffb; border-left: 4px solid #00b42a; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 13px; color: #333; }
+        .diff-add strong { color: #00b42a; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>🚀 智行知识库 V07.5.12 版本说明</h1>
+    <div class="subtitle">红枫 · 运维知识库系统 · 2026年5月24日</div>
+
+    <!-- 版本概述 -->
+    <div class="card">
+        <h2>📌 版本概述</h2>
+        <p>V07.5.12 是继 V07.5.10（增AI配置版）之后的重要架构升级版本，代号「智能款·增AI配置·架构升级版」。本次升级在完整保留 V07.5.10 全部功能（AI录入、AI智能搜索、三级权限、AI可视化配置、星标、查重）的基础之上，完成了三项重大架构升级：<span class="highlight">数据库从 SQLite 迁移至 PostgreSQL</span>、<span class="highlight">后端代码重构为 Flask 蓝图架构</span>、<span class="highlight">权限体系升级为 RBAC（基于角色的权限控制）</span>，并新增了提出人字段、角色管理、数据权限、换肤系统、仪表盘改版、PWA支持等功能。</p>
+        <p><strong>版本代号：</strong>智能款·增AI配置·架构升级版</p>
+        <p><strong>发布日期：</strong>2026年5月17日</p>
+        <p><strong>最后更新：</strong>2026年5月24日（新增换肤系统、侧边栏导航、设置面板改版、PWA支持、数据权限、仪表盘改版、操作日志可视化）</p>
+        <p><strong>技术栈：</strong>Flask 3.x（蓝图架构）+ PostgreSQL 14+ + HTML5 + JavaScript + OpenAI 兼容 API</p>
+    </div>
+
+    <!-- 与V07.5.10对比 -->
+    <div class="card">
+        <h2>📊 五版功能横向对比</h2>
+        <table>
+            <tr>
+                <th>功能模块</th>
+                <th>V07.5.8 <span class="badge-v">权限</span></th>
+                <th>V07.5.10 <span class="badge-v">智能</span></th>
+                <th>V07.5.10增AI配置 <span class="badge-v">智能+</span></th>
+                <th>V07.5.12 <span class="badge-v" style="background:#764ba2;">当前</span></th>
+            </tr>
+            <tr>
+                <td>数据</td>
+                <td>SQLite</td>
+                <td>SQLite</td>
+                <td>SQLite</td>
+                <td><span style="color:#00b42a;font-weight:bold;">PostgreSQL 14+（psycopg2）</span></td>
+            </tr>
+            <tr>
+                <td>代码结构</td>
+                <td>单文件 app.py</td>
+                <td>单文件 app.py</td>
+                <td>单文件 app.py</td>
+                <td><span style="color:#00b42a;font-weight:bold;">蓝图架构（blueprints/auth/knowledge/ai/attachment/category/role/data_permission）</span></td>
+            </tr>
+            <tr>
+                <td>权限体系</td>
+                <td>role字段（admin/user 2级）</td>
+                <td>role字段（admin/editor/user 3级）</td>
+                <td>role字段（admin/editor/user 3级）+ super_admin 特判</td>
+                <td><span style="color:#00b42a;font-weight:bold;">RBAC：roles/permissions/role_permissions 三表，@require_permission(code) 装饰器</span></td>
+            </tr>
+            <tr>
+                <td>角色管理</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">管理员可新增/编辑/删除自定义角色，动态绑定权限码，前端角色管理界面</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>提出人字段</td>
+                <td style="color:#f53f3f;">无（创建人=提交人）</td>
+                <td>submitter（提交人）</td>
+                <td>submitter（提交人）</td>
+                <td><span style="color:#00b42a;font-weight:bold;">新增 proposer（提出人）字段，与 submitter（系统记录人）分离；AI解析也提取 proposer</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>搜索加权评分</td>
+                <td>支持单关键词 OR 匹配，ID倒序</td>
+                <td>中文分词 OR 匹配</td>
+                <td>中文分词 OR 匹配</td>
+                <td><span style="color:#00b42a;font-weight:bold;">标题权重 0.6 + 内容权重 0.4，difflib 加权综合评分，按相关度排序</span> <span class="tag-opt">优化</span></td>
+            </tr>
+            <tr>
+                <td>用户角色修改</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">管理员可在账号管理中修改用户所属角色（POST /user/role），修改后强制下线</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>数据库备份</td>
+                <td>shutil.copyfile（.db文件）</td>
+                <td>shutil.copyfile（.db文件）</td>
+                <td>shutil.copyfile（.db文件）</td>
+                <td><span style="color:#00b42a;font-weight:bold;">pg_dump 导出 .sql 文件，自动备份保留最近10份</span> <span class="tag-arch">架构</span></td>
+            </tr>
+            <tr>
+                <td>AI接口配置</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td>硬编码</td>
+                <td>sys_config表，前端UI，Key脱敏</td>
+                <td>sys_config表 + 前端UI（继承），权限：ai.manage 控制</td>
+            </tr>
+            <tr>
+                <td>星标功能</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">无（待确认）</td>
+                <td>is_important 字段，前端排序</td>
+                <td>is_important 字段，前端排序（继承）</td>
+            </tr>
+            <tr>
+                <td>查重阈值</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td>difflib，双模式</td>
+                <td>difflib，双模式（继承），需 settings.dedup 权限</td>
+            </tr>
+            <tr>
+                <td>AI智能录入</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td>AI解析→回填表单</td>
+                <td>AI解析→回填表单（优化）</td>
+                <td>AI解析→回填表单（新增 proposer 字段提取 + JSON 截断自动修复）</td>
+            </tr>
+            <tr>
+                <td>语义搜索助手</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td>侧边面板 + AI摘要</td>
+                <td>侧边面板 + AI摘要（优化无答案逻辑）</td>
+                <td>侧边面板 + AI摘要（新增 difflib 加权排序，proposer 字段展示）</td>
+            </tr>
+            <tr>
+                <td>索引优化</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">PostgreSQL 自动创建 5 个核心索引（recycle_status/category/record_time/submitter/knowledge_id）</span> <span class="tag-arch">架构</span></td>
+            </tr>
+            <tr>
+                <td>仪表盘</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">6卡片仪表盘（4统计+分类环形图+最新动态），拖拽换位，白名单过滤业务事件</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>数据权限</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">按创建人隔离知识记录，sys_config开关，user_data_permissions授权</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>操作日志可视化</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">数据管理弹窗集成日志面板，分页/搜索/级别过滤</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>换肤系统</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">12种可选主题（渐变/粒子/星空/极光等），即时切换</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>PWA支持</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">添加到主屏幕，manifest.json + sw.js 离线缓存</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>移动端侧边栏</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">点击头像弹出侧边栏，含全部功能入口和退出按钮</span> <span class="tag-new">新增</span></td>
+            </tr>
+            <tr>
+                <td>设置面板改版</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td style="color:#f53f3f;">✗</td>
+                <td><span style="color:#00b42a;font-weight:bold;">可拖拽移动，手风琴折叠布局（查重/AI配置/数据权限/换肤）</span> <span class="tag-new">新增</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 本次核心新增 -->
+    <div class="card">
+        <h2>🔥 V07.5.12 核心升级内容</h2>
+
+        <h3>1. 🗄️ 数据库迁移至 PostgreSQL <span class="tag-arch">架构升级</span></h3>
+        <ul>
+            <li>底层数据库从 SQLite 升级至 <strong>PostgreSQL 14+</strong>（psycopg2 驱动，本地连接 localhost:5432，数据库：knowledge_base）</li>
+            <li>SQL 语法全面迁移：占位符 <code>?</code> 改为 <code>%s</code>，自增主键由 <code>AUTOINCREMENT</code> 改为 <code>SERIAL</code>，唯一冲突处理由 <code>INSERT OR IGNORE</code> 改为 <code>ON CONFLICT DO NOTHING</code></li>
+            <li>DBConnection 封装类统一管理连接、事务、游标（<code>RealDictCursor</code>），保持与旧 sqlite3 API 调用风格兼容</li>
+            <li>自动建表：系统首次启动时通过 <code>CREATE TABLE IF NOT EXISTS</code> + <code>CREATE INDEX IF NOT EXISTS</code> 建立全部表结构及5个核心索引</li>
+            <li>数据库备份由 shutil 拷贝 .db 文件升级至 <strong>pg_dump 导出 .sql 文件</strong>，自动保留最近10份，存入 <code>Backup/</code> 目录</li>
+            <li>旧字段兼容迁移：通过 <code>information_schema.columns</code> 检查列是否存在，不存在则 <code>ALTER TABLE ADD COLUMN</code>，避免已有数据库报错</li>
+        </ul>
+
+        <h3>2. 🏗️ Flask 蓝图架构重构 <span class="tag-arch">架构升级</span></h3>
+        <ul>
+            <li>后端代码从单文件 <code>app.py</code> 重构为 <strong>blueprints/ 蓝图目录</strong>，按功能模块拆分</li>
+            <li><code>db.py</code>：数据库层（DBConnection封装、RBAC初始化、备份、AI配置读取）</li>
+            <li><code>auth.py</code>：认证与用户管理（登录/登出/密码修改/账号CRUD/权限装饰器）</li>
+            <li><code>knowledge.py</code>：知识记录增删改查（搜索/新增/编辑/回收站/查重/星标/统计/仪表盘/日志）</li>
+            <li><code>ai.py</code>：AI功能（AI配置管理/AI解析/语义搜索）</li>
+            <li><code>attachment.py</code>：附件管理（上传/下载/绑定/删除）</li>
+            <li><code>category.py</code>：分类管理（获取/保存分类）</li>
+            <li><code>role.py</code>：角色管理（角色CRUD/权限绑定）</li>
+            <li><code>data_permission.py</code>：数据权限（开关/授权/查询）</li>
+        </ul>
+
+        <h3>3. 🛡️ 权限体系升级：RBAC <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>新增三张权限表：<code>roles</code>（角色表）、<code>permissions</code>（权限表：14个权限码）、<code>role_permissions</code>（角色权限关联表）</li>
+            <li>所有接口权限校验从 <code>if g.user["role"] == "admin"</code> 升级为 <code>@require_permission("permission.code")</code> 装饰器</li>
+            <li>系统内置3个系统角色（不可删除）：<code>admin</code>（全权）/ <code>editor</code>（编辑员）/ <code>user</code>（普通用户）</li>
+            <li>管理员可新增自定义角色，动态勾选权限码，绑定到用户；删除角色前检查是否有用户仍在使用</li>
+            <li>登录返回新增 <code>permissions</code> 权限列表，前端可精确控制按钮可见性</li>
+            <li>super_admin（isSadmin）前端豁免所有权限检查；后端 require_permission 也加 _is_sadmin 豁免</li>
+            <li>权限依赖联动：勾选/取消自动联动（edit→view, delete→view, permanent_del→recycle.view 等）</li>
+            <li>旧用户自动迁移：启动时扫描 <code>role_id IS NULL</code> 的旧用户，根据 <code>role</code> 字段匹配系统角色并补全 <code>role_id</code></li>
+        </ul>
+
+        <h3>4. 👤 提出人（proposer）字段分离 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>知识记录表新增 <code>proposer</code> 字段（提出人/报障人/申请人），与 <code>submitter</code>（系统自动记录的提交人账号）明确区分</li>
+            <li>新增知识时，前端表单新增「提出人」输入框，手动填写或 AI 自动识别提取</li>
+            <li>搜索中 <code>proposer</code> 也作为匹配字段之一，支持按提出人关键词检索</li>
+            <li>AI智能录入：系统提示词新增提出人提取规则，从文本中识别报修/申请人等，AI返回字段 <code>creator</code> 映射为 <code>proposer</code></li>
+        </ul>
+
+        <h3>5. 🎯 搜索加权评分升级 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>搜索结果排序从「ID倒序」升级为 <strong>加权相关度评分</strong>：标题相似度 × 0.6 + 内容相似度 × 0.4（使用 difflib.SequenceMatcher）</li>
+            <li>语义搜索（AI助手）中，召回后同样应用加权评分排序，优先展示最相关的记录</li>
+            <li>分词规则优化：仅对超过4字的「纯中文」片段做滑动窗口拆分，含英文字母的词保持整体匹配，减少误召回</li>
+            <li>搜索范围扩展：<code>proposer</code> 字段也加入搜索条件（匹配 question/solution/remark/submitter/<strong>proposer</strong> 共5个字段）</li>
+        </ul>
+
+        <h3>6. 🔑 角色管理接口 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>新增 <code>GET /api/roles</code>：获取全部角色及其权限列表（需 user.manage 权限）</li>
+            <li>新增 <code>POST /api/roles/add</code>：新增自定义角色，传入名称+描述+权限码数组</li>
+            <li>新增 <code>POST /api/roles/update</code>：更新角色名称/描述/权限绑定（全量替换）</li>
+            <li>新增 <code>POST /api/roles/del</code>：删除自定义角色（系统内置角色不可删，有用户绑定时拒绝删除）</li>
+            <li>新增 <code>GET /api/permissions</code>：获取全部权限定义（按分组返回）</li>
+            <li>新增 <code>POST /user/role</code>：修改指定用户的角色绑定，修改后踢下线强制重新登录</li>
+        </ul>
+
+        <h3>7. 🤖 AI 智能录入 JSON 截断自动修复 <span class="tag-fix">修复</span></h3>
+        <ul>
+            <li>当 AI 返回的 JSON 因 max_tokens 限制被截断时，自动尝试三级修复：①补全末尾引号和花括号 ②正则提取完整 JSON ③抛出异常提示用户重试</li>
+        </ul>
+
+        <h3>8. 📋 数据管理集成到主页 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>顶部栏新增「⚒ 数据管理」按钮（仅超级管理员可见），弹出式操作面板，替代 /tools 页面</li>
+            <li>功能：导出/导入Excel、清空记录、手动备份/恢复/删除备份、建表、ID流水号重置</li>
+            <li>备份列表默认折叠，XLSX库按需加载不阻塞首页</li>
+        </ul>
+
+        <h3>9. ✨ AI 辅助编辑 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>编辑弹窗新增「✨ AI优化」按钮，AI自动优化标题和内容措辞，保持原意</li>
+            <li>优化结果自动填入表单，用户确认后保存</li>
+        </ul>
+
+        <h3>10. 🎨 顶部栏重设 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>高频操作保留行内（修改密码🔑、回收站🗑️、设置⚙️）</li>
+            <li>管理类按钮收进「··· 更多 ▼」下拉菜单，所有按钮统一加图标</li>
+            <li>退出按钮改为 🔌 电源图标</li>
+        </ul>
+
+        <h3>11. 📂 分类体系调整 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>从8个专业分类调整为10个全公司通用分类，移除「默认分类」</li>
+            <li>2300+条记录已按映射规则自动迁移</li>
+        </ul>
+
+        <h3>12. 🛡️ 性能与安全优化 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>数据权限开关：60秒缓存、分类增量同步、solution字段pg_trgm索引</li>
+            <li>PG工具路径环境变量化、shell=True→列表传参、日志保留增强</li>
+            <li>修复XSS、事务中止Bug、SQL注入等安全漏洞</li>
+        </ul>
+
+        <h3>13. 📊 仪表盘改版 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>统计区域从2张简单数字卡升级为 <strong>6卡片仪表盘</strong>：知识数（含7天趋势迷你图）、本周新增、本月新增、星标数、分类分布环形图、最新动态</li>
+            <li>4张统计卡使用渐变色背景（蓝/青/黄/紫），统一高度，支持拖拽换位（顺序存入 localStorage）</li>
+            <li>分类分布：SVG donut 环形图 + 图例列表，最多8个分类 + "其他"聚合</li>
+            <li>最新动态：白名单过滤17类业务事件（新增/编辑/删除/恢复/登录/导入等），过滤AI调试和系统运维日志；每条动态带彩色动作图标</li>
+            <li>知识 CRUD 操作日志升级：从 <code>ID=5</code> 改为 <code>「标题」→ 分类（ID=5）</code> 格式，信息量大幅提升</li>
+        </ul>
+
+        <h3>14. 🔒 数据权限功能 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>按创建人隔离知识记录，普通用户仅可查看自己及被授权用户创建的知识</li>
+            <li>系统设置中可开关数据权限（需 settings.data_perm 权限），管理/超管豁免不受限制</li>
+            <li>支持授权管理：将其他创建人的知识查看权限授予指定用户（含"其他"创建人分组）</li>
+            <li>后端统一封装 <code>build_data_perm_where()</code> 过滤函数，所有查询均受数据权限约束</li>
+        </ul>
+
+        <h3>15. 📋 操作日志可视化 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>数据管理弹窗内集成操作日志面板，支持分页、关键词搜索、级别过滤</li>
+            <li>日志解析支持3种格式（含/无用户名操作日志、普通日志），白名单过滤17类业务事件</li>
+            <li>知识 CRUD 日志含标题和分类信息，动态展示带动作类型图标和颜色</li>
+        </ul>
+
+        <h3>16. 🚀 启动器优化 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>启动器从双黑窗口改为单窗口模式，<code>subprocess.run</code> 替代 <code>Popen(CREATE_NEW_CONSOLE)</code></li>
+            <li>通过 <code>atexit</code> 注册清理函数，Ctrl+C 或关闭窗口时自动清理残留进程</li>
+        </ul>
+
+        <h3>17. 🎨 换肤系统 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>系统设置内新增「换肤系统」面板（手风琴🎨图标），提供 12 种可选主题</li>
+            <li>主题包括：原始图片、彩虹渐变、三色呼吸、粒子渐变（默认）、深空星夜、极光漫射、深海气泡、霓虹网格、日落渐变、浅色气泡、矩阵代码雨、海洋波浪</li>
+            <li>选择后立即生效，设置自动保存到浏览器本地存储</li>
+        </ul>
+
+        <h3>18. 📱 PWA 支持 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>新增 <code>manifest.json</code> 和 <code>sw.js</code>，支持添加到手机/电脑主屏幕</li>
+            <li>PWA 模式下全屏运行，无浏览器地址栏，体验接近原生应用</li>
+        </ul>
+
+        <h3>19. 📱 移动端侧边栏 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>移动端新增用户侧边栏导航（点击头像👤触发），展示用户头像/姓名/角色</li>
+            <li>侧边栏包含全部功能入口和退出按钮，优化移动端操作体验</li>
+        </ul>
+
+        <h3>20. ⚙️ 设置面板改版 <span class="tag-opt">优化</span></h3>
+        <ul>
+            <li>设置弹窗改为可拖拽移动，按住标题栏可拖动到任意位置</li>
+            <li>采用手风琴式折叠面板（Accordion）：查重设置 / AI配置 / 数据权限 / 换肤系统</li>
+            <li>查重设置需 settings.dedup 权限，数据权限需 settings.data_perm 权限，AI配置需 ai.manage 权限</li>
+            <li>设置按钮入口：有 settings.dedup 或 settings.data_perm 或 ai.manage 任一权限即可见</li>
+        </ul>
+
+        <h3>21. 🔐 权限码新增 <span class="tag-new">新增</span></h3>
+        <ul>
+            <li>新增系统设置分组权限码：<code>settings.dedup</code>（查重设置）、<code>settings.data_perm</code>（数据权限设置）</li>
+            <li>已删除无用的 <code>settings.view</code> 权限码</li>
+            <li>权限分组 group_name='系统设置'，设置按钮需任一设置权限可见</li>
+        </ul>
+    </div>
+
+    <!-- 继承自V07.5.10的完整能力 -->
+    <div class="card">
+        <h2>🔗 继承自 V07.5.10 增AI配置版的完整能力（已包含）</h2>
+        <ul>
+            <li>AI接口可视化配置（sys_config 键值表，admin专属，Key前端脱敏，一键测试连接）</li>
+            <li>⭐ 星标功能（is_important字段，切换接口，搜索结果团队共享排序优先）</li>
+            <li>🔍 查重阈值检测（difflib，仅标题/标题+内容双模式，阈值可调，高危强提示）</li>
+            <li>🔮 AI智能搜索助手（右下角悬浮面板，输入即搜，关键词召回+AI摘要两步策略，无答案时不展示误导内容）</li>
+            <li>🤖 AI智能录入（折叠面板，粘贴杂乱文本→AI解析→自动回填表单，分类二次校验兜底）</li>
+            <li>👥 三级权限体系（管理员/编辑员/普通用户，前端CSS置灰+后端装饰器双重保护）</li>
+            <li>🔎 搜索功能（分词搜索、分类筛选、日期范围筛选、联想建议、分页、回到顶部）</li>
+            <li>📎 附件管理（上传/预览/下载/删除，支持10种格式，最大16MB）</li>
+            <li>🔐 账号管理（多账号、Token认证7天、重置密码、禁用/启用、记住密码）</li>
+            <li>💾 自动备份（编辑/永久删除时触发，最多保留10份）</li>
+            <li>📅 自定义日历面板（紫色渐变，替代系统 input[type=date]）</li>
+        </ul>
+    </div>
+
+    <!-- 升级注意事项 -->
+    <div class="card">
+        <h2>📝 V07.5.10 升级至 V07.5.12 注意事项</h2>
+        <ul>
+            <li>1. <strong>环境准备（必须）</strong>：安装 PostgreSQL 14+，创建数据库 <code>knowledge_base</code>，用户名 <code>postgres</code>，密码 <code>123456</code>（或通过环境变量 KB_DB_USER / KB_DB_PASSWORD 配置）</li>
+            <li>2. <strong>安装 Python 依赖</strong>：<code>pip install psycopg2-binary pandas openpyxl flask requests</code></li>
+            <li>3. <strong>旧数据迁移（可选）</strong>：如需从 SQLite 迁移历史数据，使用数据库工具 DBManager.exe 先导出 Excel，启动新版后通过 DBManager 导入</li>
+            <li>4. <strong>目录结构变化</strong>：app.py 仅作为入口，实际逻辑全部在 blueprints/ 目录下，部署时需确保 blueprints/ 目录完整</li>
+            <li>5. <strong>pg_dump 路径</strong>：默认 <code>D:\PostgreSQL\bin\pg_dump.exe</code>，可通过环境变量 <code>KB_PG_BIN</code> 覆盖</li>
+            <li>6. <strong>首次启动</strong>：程序自动建表、初始化RBAC角色权限、创建admin账号（已有则跳过），旧用户自动迁移到新角色体系</li>
+            <li>7. <strong>AI配置</strong>：V07.5.10 的 sys_config AI配置数据会随数据库迁移一起带过来；否则首次启动后需重新在前端配置</li>
+        </ul>
+    </div>
+
+    <!-- 版本演进总览 -->
+    <div class="card">
+        <h2>📈 版本演进总览</h2>
+        <table>
+            <tr><th>版本</th><th>代号</th><th>发布日期</th><th>核心能力</th></tr>
+            <tr><td>V07</td><td>基础</td><td>2026年初</td><td>知识增删改查、分类、搜索、分页</td></tr>
+            <tr><td>V07.5.7</td><td>附件</td><td>2026年3月初</td><td>附件管理、回收站、搜索建议、统计</td></tr>
+            <tr><td>V07.5.8</td><td>权限</td><td>2026年4月1日</td><td>多账号登录、Token认证、管理员/用户双角色、密码管理</td></tr>
+            <tr><td>V07.5.10</td><td>智能</td><td>2026年4月14日</td><td>AI录入、AI智能助手、三级权限（编辑员）、分词升级、星标</td></tr>
+            <tr><td>V07.5.10（增AI配置）</td><td>智能款·增AI配置</td><td>2026年4月14日</td><td>AI接口可视化配置（sys_config表）、Key脱敏、一键测试连接、星标、查重</td></tr>
+            <tr><td style="color:#764ba2;font-weight:bold;">V07.5.12</td><td style="color:#764ba2;font-weight:bold;">智能款·增AI配置·架构升级</td><td style="color:#764ba2;font-weight:bold;">2026年5月17日</td><td style="color:#764ba2;font-weight:bold;">PostgreSQL迁移、蓝图架构重构、RBAC权限体系、proposer字段、搜索加权评分、角色管理、AI JSON修复、仪表盘、数据权限、换肤、PWA、操作日志</td></tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        红枫 · 智行知识库 · V07.5.12 智能款·增AI配置·架构升级版 · 2026年5月24日
+    </div>
+</div>
+</body>
+</html>

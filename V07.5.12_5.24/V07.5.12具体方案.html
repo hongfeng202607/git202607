@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>V07.5.12 具体方案（增AI配置·架构升级版）</title>
+
+    <style>
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Microsoft YaHei', sans-serif; }
+
+        body { background: #f0f4f8; padding: 30px 20px; line-height: 1.8; }
+
+        .wrap { max-width: 1280px; margin: 0 auto; }
+
+        h1 { text-align: center; color: #165DFF; font-size: 28px; margin-bottom: 10px; }
+
+        .subtitle { text-align: center; color: #86909c; font-size: 14px; margin-bottom: 30px; }
+
+        .card { background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(22,93,255,.08); padding: 28px; margin-bottom: 20px; }
+
+        .card h2 { color: #1d2129; font-size: 20px; margin-bottom: 16px; border-left: 4px solid #165DFF; padding-left: 12px; }
+
+        .card h3 { color: #165DFF; font-size: 16px; margin: 20px 0 8px; }
+
+        .card h4 { color: #333; font-size: 14px; margin: 12px 0 6px; font-weight: bold; }
+
+        .card p { color: #333; font-size: 14px; margin-bottom: 8px; line-height: 1.8; }
+
+        .card ul { padding-left: 24px; color: #333; font-size: 14px; }
+
+        .card li { margin-bottom: 6px; line-height: 1.8; }
+
+        pre { background: #1a1a2e; color: #e0e0f0; padding: 18px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.7; margin: 12px 0; font-family: Consolas, 'Courier New', monospace; }
+
+        .ck { color: #569cd6; }
+
+        .cs { color: #ce9178; }
+
+        .cc { color: #6a9955; }
+
+        .cf { color: #dcdcaa; }
+
+        .cn { color: #b5cea8; }
+
+        .cd { color: #9cdcfe; }
+
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+
+        th { background: #f7f8fa; color: #333; padding: 8px 12px; border: 1px solid #eee; text-align: left; }
+
+        td { padding: 8px 12px; border: 1px solid #eee; vertical-align: top; }
+
+        .tag-new { background: #00b42a; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+
+        .tag-api { background: #165DFF; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+
+        .tag-db  { background: #f53f3f; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+
+        .tag-arch { background: #764ba2; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+
+        code { background: #f0f4f8; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: Consolas, monospace; color: #c7254e; }
+
+        .method-get  { background: #00b42a; color: #fff; font-size: 12px; padding: 1px 7px; border-radius: 3px; font-family: monospace; }
+
+        .method-post { background: #165DFF; color: #fff; font-size: 12px; padding: 1px 7px; border-radius: 3px; font-family: monospace; }
+
+        .footer { text-align: center; color: #999; font-size: 13px; margin-top: 30px; padding-bottom: 20px; }
+
+        .note { background: #fffbe6; border-left: 4px solid #faad14; padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #666; margin: 10px 0; }
+
+        .highlight { background: #f0f9eb; border: 1px solid #b7eb8f; border-radius: 6px; padding: 14px; margin: 12px 0; }
+
+        .diff-add { background: #e6fffb; border-left: 4px solid #00b42a; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 13px; color: #333; }
+
+        .diff-add strong { color: #00b42a; }
+
+        .diff-change { background: #fffbe6; border-left: 4px solid #faad14; padding: 10px 14px; margin: 10px 0; border-radius: 0 6px 6px 0; font-size: 13px; color: #333; }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="wrap">
+
+    <h1>🔧 智行知识V07.5.12 具体方案</h1>
+
+    <div class="subtitle">系统架构 · 数据库设计·蓝图结构 · RBAC权限体系 · 接口逻辑 · AI集成 · 搜索加权算法 · 完整源码说明</div>
+
+
+
+    <!-- ==================== 1. 系统架构 ==================== -->
+
+    <div class="card">
+
+        <h2>1. 系统架构概览</h2>
+
+        <p>智行知识V07.5.12 V07.5.10 增AI配置版基础之上完成三项架构升级：<strong>数据库从 SQLite 迁移PostgreSQL</strong>strong>后端代码重构Flask 蓝图架构</strong>strong>权限体系升级RBAC</strong>。同时新增提出人字段、搜索加权评分和角色管理功能/p>
+
+        <table>
+
+            <tr><th>层级</th><th>技术栈</th><th>说明</th></tr>
+
+            <tr><td>前端</td><td>HTML5 + CSS3 + Vanilla JS</td><td>单文<code>index.html</code>，无框架依赖，Fetch API 通信，登录返permissions 数组控制界面元素</td></tr>
+
+            <tr><td>后端</td><td>Flask 3.x（Python 3.12 蓝图架构</td><td><code>app.py</code>（入口）+ <code>blueprints/</code>个模块），提RESTful 接口</td></tr>
+
+            <tr><td>数据/td><td>PostgreSQL 14+（psycopg2 驱动/td><td>本地 localhost:5432，数据库<code>knowledge_base</code>，用<code>postgres</code>（可通过环境变量 KB_DB_USER 配置），程序启动自动建表+索引</td></tr>
+
+            <tr><td>认证</td><td>Tokencode>secrets.token_hex(32)</code>/td><td>登录返回64字符Token，有效期7天，存入 <code>user_tokens</code> /td></tr>
+
+            <tr><td>权限</td><td>RBAC（roles/permissions/role_permissions/td><td>14个权限码个系统角色，支持自定义角色；<code>@require_permission(code)</code> 装饰器接口级控制</td></tr>
+
+            <tr><td>附件存储</td><td>本地磁盘</td><td><code>uploads/</code> 目录，文件名 UUID 重命名，原始名存入数据库</td></tr>
+
+            <tr><td>AI接口</td><td>任意 OpenAI 兼容 API（可配置/td><td>配置<code>sys_config</code> 键表，支DeepSeek/阿里云百炼等，Key脱敏展示</td></tr>
+
+            <tr><td>备份</td><td>pg_dump（PostgreSQL 原生工具/td><td>编辑/永久删除时触发，导出 .sql 文件，最多保0/td></tr>
+
+            <tr><td>日志</td><td>Python logging（RotatingFileHandler/td><td><code>server.log</code>，最0MB × 3备份</td></tr>
+
+        </table>
+
+
+
+        <h3>完整请求链路</h3>
+
+        <pre>用户浏览
+
+  Fetch API（携token 请求头）
+
+Flask 路由层（蓝图分发
+
+  @login_required 装饰器（验证 Token 有效性用户状态，挂载 g.user
+
+  @require_permission("permission.code") 装饰器（role_permissions 表）
+
+业务逻辑层（blueprints/knowledge.py / ai.py / ...
+
+  psycopg2 PostgreSQLspan class="cd">knowledge_base</span>）读
+
+  ↓（AI 相关）从 sys_config 读取配置 HTTP POST AI API
+
+JSON 响应返回前端
+
+  前端 JS 根据 permissions 数组渲染 DOM（精确按钮显隐控制）</pre>
+
+
+
+        <h3>蓝图目录结构</h3>
+
+        <pre>V07.5.12智能款增AI配置5.17/
+
+├─┢ app.py                <span class="cc"># 入口：create_app()，注个蓝/span>
+
+├─┢ blueprints/
+
+  ├─┢ db.py             <span class="cc"># 数据库层：DBConnection封装、RBAC初始化备份AI配置读取</span>
+
+  ├─┢ auth.py           <span class="cc"># 认证+用户管理：登登出/密码/账号CRUD/权限装饰/span>
+
+  ├─┢ knowledge.py      <span class="cc"># 知识记录：搜新增/编辑/回收查重/星标/统计/仪表/span>
+
+  ├─┢ ai.py             <span class="cc"># AI功能：AI配置管理/AI解析/语义搜索</span>
+
+  ├─┢ attachment.py     <span class="cc"># 附件管理：上下载/绑定/删除</span>
+
+  ├─┢ category.py       <span class="cc"># 分类管理：获保存分类</span>
+
+  ├─┢ role.py           <span class="cc"># 角色管理：角色CRUD/权限绑定</span>
+
+  └─┢ data_permission.py <span class="cc"># 数据权限：开授权/查询</span>
+
+├─┢ index.html            <span class="cc"># 前端单页应用（角色管理UI、提出人字段 V07.5.12新增/span>
+
+├─┢ KnowledgeBase.db      <span class="cc"># 旧SQLite文件（历史备份，新版不再使用/span>
+
+├─┢ Backup/               <span class="cc"># 自动备份目录（pg_dump .sql文件，最0份）</span>
+
+├─┢ uploads/              <span class="cc"># 附件存储目录（UUID命名/span>
+
+└─┢ server.log            <span class="cc"># 操作日志</span></pre>
+
+    </div>
+
+
+
+    <!-- ==================== 2. 数据库设==================== -->
+
+    <div class="card">
+
+        <h2>2. 数据库设计<span class="tag-db">PostgreSQL</span></h2>
+
+
+
+        <h3>2.1 知识记录<code>operation_records</code></h3>
+
+        <table>
+
+            <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+
+            <tr><td>id</td><td>SERIAL PRIMARY KEY</td><td>主键，自增ID（PostgreSQL SERIAL/td></tr>
+
+            <tr><td>category</td><td>TEXT NOT NULL</td><td>分类名称</td></tr>
+
+            <tr><td>submitter</td><td>TEXT</td><td>记录人（系统自动写入当前登录账号/td></tr>
+
+            <tr><td>question</td><td>TEXT NOT NULL</td><td>标题/问题描述</td></tr>
+
+            <tr><td>solution</td><td>TEXT NOT NULL</td><td>核心内容/处理方法</td></tr>
+
+            <tr><td>remark</td><td>TEXT</td><td>补充说明（可空）</td></tr>
+
+            <tr><td>record_time</td><td>TEXT NOT NULL</td><td>记录时间，格式：YYYY年MM月DDHH时MM分SS/td></tr>
+
+            <tr><td>recycle_status</td><td>TEXT DEFAULT '正常'</td><td>'正常' '回收（软删除标记/td></tr>
+
+            <tr><td>attachments</td><td>TEXT DEFAULT ''</td><td>冗余字段（实际附件存 attachments 表）</td></tr>
+
+            <tr><td>is_important</td><td>INTEGER DEFAULT 0</td><td>星标状：1=重要/星标=普/td></tr>
+
+            <tr><td>proposer <span class="tag-new">V07.5.12新增</span></td><td>TEXT DEFAULT ''</td><td>提出人（报障申请当事人），手动填写或AI自动提取；与 submitter 记录人分/td></tr>
+
+        </table>
+
+        <div class="note">⚠️ proposer 字段通过 <code>information_schema.columns</code> 检索查后 ALTER TABLE ADD COLUMN，幂等安全，旧数据库平滑升级/div>
+
+        <p>已建个核心索引：<code>idx_records_recycle</code>（recycle_status <code>idx_records_category</code>（category <code>idx_records_time</code>（record_time <code>idx_records_submitter</code>（submitter <code>idx_attachments_knowledge</code>（attachments.knowledge_id/p>
+
+
+
+        <h3>2.2 用户<code>users</code></h3>
+
+        <table>
+
+            <tr><th>字段</th><th>类型</th><th>说明</th></tr>
+
+            <tr><td>id</td><td>SERIAL PRIMARY KEY</td><td>主键</td></tr>
+
+            <tr><td>username</td><td>TEXT UNIQUE NOT NULL</td><td>账号（唯一/td></tr>
+
+            <tr><td>password</td><td>TEXT NOT NULL</td><td>SHA-256哈希后的密码</td></tr>
+
+            <tr><td>role</td><td>TEXT DEFAULT 'user'</td><td>角色名称（兼容旧版，新版role_id 为准/td></tr>
+
+            <tr><td>role_id <span class="tag-new">V07.5.12新增</span></td><td>INTEGER REFERENCES roles(id)</td><td>关联 RBAC 角色表，新版权限校验以此为准</td></tr>
+
+            <tr><td>status</td><td>INTEGER DEFAULT 1</td><td>状：1=启用=禁用</td></tr>
+
+            <tr><td>create_time</td><td>TEXT</td><td>创建时间</td></tr>
+
+        </table>
+
+
+
+        <h3>2.3 RBAC 权限表（V07.5.12新增span class="tag-new">新增</span></h3>
+
+        <table>
+
+            <tr><th>表名</th><th>字段</th><th>说明</th></tr>
+
+            <tr>
+
+                <td rowspan="4"><code>roles</code><br>角色/td>
+
+                <td>id SERIAL PK</td><td>角色主键</td>
+
+            </tr>
+
+            <tr><td>name TEXT UNIQUE</td><td>角色名称（唯一），系统内置：admin/editor/user</td></tr>
+
+            <tr><td>description TEXT</td><td>角色描述</td></tr>
+
+            <tr><td>is_system INTEGER</td><td>是否系统内置角色=是，不可删除/td></tr>
+
+            <tr>
+
+                <td rowspan="3"><code>permissions</code><br>权限/td>
+
+                <td>id SERIAL PK</td><td>权限主键</td>
+
+            </tr>
+
+            <tr><td>code TEXT UNIQUE</td><td>权限码（唯一），<code>knowledge.add</code>code>ai.manage</code></td></tr>
+
+            <tr><td>name TEXT / group_name TEXT</td><td>权限名称 / 扢属分/td></tr>
+
+            <tr>
+
+                <td rowspan="2"><code>role_permissions</code><br>角色权限关联/td>
+
+                <td>role_id INTEGER</td><td>关联 roles.id（级联删除）</td>
+
+            </tr>
+
+            <tr><td>permission_code TEXT</td><td>关联 permissions.code（级联删除），联合主/td></tr>
+
+        </table>
+
+
+
+        <h3>2.4 其他表（继承V07.5.10/h3>
+
+        <table>
+
+            <tr><th>表名</th><th>主要字段</th><th>说明</th></tr>
+
+            <tr><td>user_tokens</td><td>username / token / expire_time</td><td>登录Token，有效期7/td></tr>
+
+            <tr><td>category_config</td><td>id SERIAL / name TEXT UNIQUE</td><td>分类列表，id控制顺序</td></tr>
+
+            <tr><td>search_history</td><td>keyword UNIQUE / count / last_time</td><td>搜索历史统计</td></tr>
+
+            <tr><td>attachments</td><td>knowledge_id / origin_name / save_name / file_ext</td><td>附件记录，UUID命名</td></tr>
+
+            <tr><td>sys_config</td><td>key TEXT PK / value TEXT</td><td>系统配置（AI接口：ai_api_url/ai_api_key/ai_model/td></tr>
+
+        </table>
+
+    </div>
+
+
+
+    <!-- ==================== 3. 后端接口 ==================== -->
+
+    <div class="card">
+
+        <h2>3. 后端接口一<span class="tag-api">RESTful</span></h2>
+
+
+
+        <h3>3.1 认证接口（blueprints/auth.py/h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/login</td><td>无需登录</td><td>账号密码验证，返Token + 角色 + role_id + <strong>permissions 数组</strong></td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/logout</td><td>已登/td><td>删除当前 Token，出登/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/reset_pwd</td><td>已登/td><td>修改当前用户密码（≥6位）</td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/permissions/me</td><td>已登/td><td>返回当前用户的权限码列表（前端权限同步）</td></tr>
+
+        </table>
+
+
+
+        <h3>3.2 账号管理接口（需 user.manage 权限/h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>说明</th></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/user/list</td><td>获取扢有账号列表（JOIN roles，返role_name/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/user/add</td><td>新增账号（支role_id role 名称，默user/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/user/reset</td><td>重置指定账号密码23456</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/user/status</td><td>启用/禁用账号（非sadmin不可操作admin角色用户/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/user/delete</td><td>删除账号（同时踢下线，禁止删除admin/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/user/role <span class="tag-new">V07.5.12新增</span></td><td>修改用户角色绑定（role_id），修改后踢下线强制重新登录</td></tr>
+
+        </table>
+
+
+
+        <h3>3.3 角色管理接口（blueprints/role.pyspan class="tag-new">V07.5.12新增</span></h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/roles</td><td>user.manage</td><td>获取全部角色及其权限列表、绑定用户数</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/roles/add</td><td>user.manage</td><td>新增自定义角色（name+description+permissions数组/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/roles/update</td><td>user.manage</td><td>更新角色（全量替换权限绑定）</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/roles/del</td><td>user.manage</td><td>删除角色（系统内置角色不可删，有用户绑定则拒绝）</td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/permissions</td><td>已登/td><td>获取全部权限定义（按 group_name 分组返回/td></tr>
+
+        </table>
+
+
+
+        <h3>3.4 知识管理接口（blueprints/knowledge.py/h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/search</td><td>已登/td><td>分词搜索 + 加权评分排序 + 分页；关键词匹配 proposer 字段（V07.5.12/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/add</td><td>knowledge.add</td><td>新增知识记录（含 proposer 字段），submitter 自动填当前账/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/edit</td><td>knowledge.edit</td><td>编辑知识记录（含 proposer），自动触发 pg_dump 备份</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/del</td><td>knowledge.delete</td><td>软删除（移入回收站），触发备/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/get_recycle</td><td>已登/td><td>获取回收站列表（全部软删除记录）</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/restore_recycle</td><td>已登/td><td>从回收站恢复指定记录</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/delete_permanent</td><td>knowledge.permanent_del</td><td>永久删除（同时清理关联附件文件，触发备份/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/toggle_star/&lt;id&gt;</td><td>已登/td><td>切换星标状（is_important 0/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/check_duplicate</td><td>已登/td><td>查重阈值测（difflib，标标题+内容双模式，可自定义阈）</td></tr>
+
+        </table>
+
+
+
+        <h3>3.5 AI接口（blueprints/ai.py/h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/ai_parse</td><td>ai.use</td><td>AI智能录入：解析文本，返回分类/proposer/标题/内容（含JSON截断自动修复/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/semantic_search</td><td>ai.use</td><td>语义搜索：分词召+ difflib加权排序 + AI摘要（含 proposer 字段/td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/admin/ai_config</td><td>ai.manage</td><td>获取当前 AI 配置（Key 脱敏/td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/admin/ai_config</td><td>ai.manage</td><td>保存/更新 AI 配置（url/key/model），Key 留空则不覆盖</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/admin/ai_config/test</td><td>ai.manage</td><td>先保存后从库读取测试，校choices[0].message.content 结构，非JSON也捕获并返回预览</td></tr>
+
+        </table>
+
+
+
+        <h3>3.6 统计与辅助接口（blueprints/knowledge.py/h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>说明</th></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/suggest</td><td>搜索建议（问题标题模糊匹配，朢条）</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/log_search</td><td>记录搜索历史（关键词 + 计数/td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/stat_counts</td><td>返回总条/ 本周新增 / 本月新增（支cate 参数按分类统计）</td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/weekly_added_count</td><td>返回本周新增条数（兼容接口）</td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/dashboard <span class="tag-new">5.23新增</span></td><td>仪表盘数据：分类分布(categories)天趋trend)、最新动recent,白名单过动作类型)、星标数(star_count)</td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/logs <span class="tag-new">5.23新增</span></td><td>操作日志查询：分page/page_size)、关键词搜索(keyword)、级别过level)</td></tr>
+
+        </table>
+
+
+
+        <h3>3.7 数据权限接口（blueprints/data_permission.pyspan class="tag-new">5.22新增</span></h3>
+
+        <table>
+
+            <tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/data_permission/toggle</td><td>settings.data_perm</td><td>切换数据权限弢关（0/1），写入 sys_config</td></tr>
+
+            <tr><td><span class="method-post">POST</span></td><td>/api/data_permission/grant</td><td>settings.data_perm</td><td>授权用户查看指定创建人的知识（granted_username/granted_ids数组/td></tr>
+
+            <tr><td><span class="method-get">GET</span></td><td>/api/data_permission/grants</td><td>settings.data_perm</td><td>获取当前授权关系列表</td></tr>
+
+        </table>
+
+    </div>
+
+
+
+    <h3>3.8 数据管理工具接口（app.py 直写API）<span class="tag-new">5.22新增</span></h3>
+        <table>
+            <tr><th>方法</th><th>路径</th><th>权限</th><th>说明</th></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/import_records</td><td>已登录（_check_token）</td><td>批量导入知识记录（Excel解析后逐条写入）</td></tr>
+            <tr><td><span class="method-get">GET</span></td><td>/api/backup/list</td><td>已登录</td><td>列出 Backup/ 目录下所有 .sql 备份文件（名称/大小/时间）</td></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/backup/manual</td><td>已登录</td><td>手动触发 pg_dump 备份（不限制频率）</td></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/backup/restore</td><td>已登录</td><td>从指定 .sql 备份文件恢复到数据库（先init_tables再psql恢复）</td></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/backup/delete</td><td>已登录</td><td>删除指定备份文件（防路径穿越）</td></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/backup/init_tables</td><td>已登录</td><td>初始化数据库表结构（空库建表用）</td></tr>
+            <tr><td><span class="method-get">GET</span></td><td>/api/id_sequence</td><td>已登录</td><td>查询当前 ID 流水号状态（max_id + next_id）</td></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/id_sequence</td><td>已登录</td><td>重置 ID 流水号起始值（start_with，不能≤当前max_id）</td></tr>
+            <tr><td><span class="method-get">GET</span></td><td>/api/logs</td><td>已登录</td><td>操作日志查询（分页/关键词/级别过滤，最多5000条）</td></tr>
+            <tr><td><span class="method-post">POST</span></td><td>/api/logs/clear</td><td>已登录</td><td>清空操作日志文件</td></tr>
+        </table>
+    </div>
+
+    <!-- ==================== 4. RBAC权限体系 ==================== -->
+
+    <div class="card">
+
+        <h2>4. RBAC 权限体系 <span class="tag-new">V07.5.12新增</span></h2>
+
+
+
+        <h3>4.1 系统权限码与角色矩阵</h3>
+
+        <table>
+
+            <tr><th>权限/th><th>admin</th><th>editor</th><th>user</th></tr>
+
+            <tr><td>knowledge.view（查看知识）</td><td>✓</td><td>✓</td><td>✓</td></tr>
+
+            <tr><td>knowledge.add（新增知识）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>knowledge.edit（编辑知识）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>knowledge.delete（移入回收站）</td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>knowledge.permanent_del（永久删除）</td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>recycle.view（查看回收站）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>recycle.restore（恢复记录）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>attachment.upload（上传附件）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>attachment.delete（删除附件）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>category.manage（管理分类）</td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>user.manage（管理用户账号）</td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>settings.view（查看系统设置）</td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>ai.manage（管理AI接口配置）</td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>ai.use（使用AI功能）</td><td>✓</td><td>✓</td><td></td></tr>
+
+            <tr><td>settings.dedup（查重设置）<span class="tag-new">V07.5.12新增</span></td><td>✓</td><td></td><td></td></tr>
+
+            <tr><td>settings.data_perm（数据权限设置）<span class="tag-new">V07.5.12新增</span></td><td>✓</td><td></td><td></td></tr>
+
+        </table>
+
+        <div class="note">💡 自定义角色可任意组合以上16个权限码（含2个系统设置权限）；系统内3个角色（admin/editor/user）不可删除，admin角色只有超级管理员可编辑。<br>已删除无用的 settings.view 权限码。设置按钮入口：有 settings.dedup 或 settings.data_perm 或 ai.manage 任一权限即可见。</div>
+
+
+
+        <h3>4.2 装饰器实现</h3>
+
+        <pre><span class="cc"># blueprints/auth.py</span>
+
+
+
+<span class="ck">def</span> <span class="cf">_has_permission</span>(role_id, code):
+
+    <span class="cs">"""检索查角色是否拥有指定权限码（查 role_permissions 表）"""</span>
+
+    <span class="ck">if</span> role_id <span class="ck">is None</span>:
+
+        <span class="ck">return False</span>
+
+    conn = get_db_connection()
+
+    row = conn.execute(
+
+        <span class="cs">'SELECT 1 FROM role_permissions WHERE role_id=%s AND permission_code=%s'</span>,
+
+        (role_id, code)
+
+    ).fetchone()
+
+    conn.close()
+
+    <span class="ck">return</span> row <span class="ck">is not None</span>
+
+
+
+<span class="ck">def</span> <span class="cf">require_permission</span>(code):
+
+    <span class="cs">"""权限校验装饰器，调用前需先经 @login_required 挂载 g.user"""</span>
+
+    <span class="ck">def</span> decorator(f):
+
+        @functools.wraps(f)
+
+        <span class="ck">def</span> <span class="cf">wrapper</span>(*args, **kwargs):
+
+            <span class="ck">if not</span> _has_permission(g.user[<span class="cs">"role_id"</span>], code):
+
+                <span class="ck">return</span> jsonify({<span class="cs">"status"</span>: <span class="cs">"error"</span>, <span class="cs">"msg"</span>: <span class="cs">"无权限执行此操作"</span>}), <span class="cn">403</span>
+
+            <span class="ck">return</span> f(*args, **kwargs)
+
+        <span class="ck">return</span> wrapper
+
+    <span class="ck">return</span> decorator
+
+
+
+<span class="cc"># 接口使用示例/span>
+
+@knowledge_bp.route(<span class="cs">'/add'</span>, methods=[<span class="cs">'POST'</span>])
+
+@login_required
+
+@require_permission(<span class="cs">"knowledge.add"</span>)   <span class="cc"># 仅有 knowledge.add 权限的角色可访问</span>
+
+<span class="ck">def</span> <span class="cf">add</span>():
+
+    ...</pre>
+
+
+
+        <h3>4.3 RBAC 初始化（启动时自动执行）</h3>
+
+        <pre><span class="cc"># blueprints/db.py init_rbac()</span>
+
+<span class="cc"># 1. INSERT INTO permissions ... ON CONFLICT (code) DO NOTHING  插入14个权限码</span>
+
+<span class="cc"># 2. 对每个系统角色（admin/editor/user）：</span>
+
+<span class="cc">#    - 查或新增角色记录</span>
+
+<span class="cc">#    - DELETE FROM role_permissions WHERE role_id=?  全量重建权限绑定</span>
+
+<span class="cc">#    - INSERT INTO role_permissions ... ON CONFLICT DO NOTHING  绑定权限/span>
+
+<span class="cc"># 3. 旧用户迁移：SELECT id,role FROM users WHERE role_id IS NULL</span>
+
+<span class="cc">#    role 字段匹配系统角色 UPDATE users SET role_id=? WHERE id=?</span></pre>
+
+    </div>
+
+
+
+    <!-- ==================== 5. 核心业务逻辑 ==================== -->
+
+    <div class="card">
+
+        <h2>5. 核心业务逻辑详解</h2>
+
+
+
+        <h3>5.1 搜索加权评分算法（V07.5.12 升级/h3>
+
+        <div class="diff-change">
+
+            <strong>V07.5.10/strong>全文 OR 匹配后按 ID 倒序返回，结果与关键词相关度不可控br>
+
+            <strong>V07.5.12/strong>OR 匹配召回全部候后，按 difflib 加权评分排序，最相关记录优先展示
+
+        </div>
+
+        <pre><span class="cc"># blueprints/knowledge.py search()</span>
+
+<span class="cc"># 取全部匹配记录，按加权评分（标题0.6 + 内容0.4）排序，再分/span>
+
+all_rows = conn.execute(<span class="cs">"SELECT * FROM operation_records"</span> + where + date_where, ...).fetchall()
+
+candidates = [dict(r) <span class="ck">for</span> r <span class="ck">in</span> all_rows]
+
+
+
+<span class="ck">for</span> c <span class="ck">in</span> candidates:
+
+    title = (c[<span class="cs">'question'</span>] <span class="ck">or</span> <span class="cs">''</span>).strip()
+
+    content = ((c[<span class="cs">'solution'</span>] <span class="ck">or</span> <span class="cs">''</span>) + <span class="cs">' '</span> + (c[<span class="cs">'remark'</span>] <span class="ck">or</span> <span class="cs">''</span>)).strip()
+
+    title_score = difflib.SequenceMatcher(<span class="ck">None</span>, key, title).ratio() <span class="ck">if</span> title <span class="ck">else</span> <span class="cn">0</span>
+
+    content_score = difflib.SequenceMatcher(<span class="ck">None</span>, key, content).ratio() <span class="ck">if</span> content <span class="ck">else</span> <span class="cn">0</span>
+
+    c[<span class="cs">'_score'</span>] = title_score * <span class="cn">0.6</span> + content_score * <span class="cn">0.4</span>
+
+candidates.sort(key=<span class="ck">lambda</span> c: c[<span class="cs">'_score'</span>], reverse=<span class="ck">True</span>)
+
+
+
+<span class="cc"># 计算总数并分/span>
+
+total = len(candidates)
+
+page_rows = candidates[(page-<span class="cn">1</span>)*pageSize : page*pageSize]</pre>
+
+
+
+        <h3>5.2 分词搜索算法（改进：纯中文拆分）</h3>
+
+        <pre><span class="cc"># 分词规则优化（V07.5.12）：仅对超过4字的纯中文拆滑动窗口</span>
+
+raw_words = re.split(<span class="cs">r'[\s,，；：！？\t\n\r]+'</span>, key)
+
+keywords = []
+
+<span class="ck">for</span> w <span class="ck">in</span> raw_words:
+
+    w = w.strip()
+
+    <span class="ck">if</span> len(w) >= <span class="cn">2</span>:
+
+        keywords.append(w)
+
+    <span class="cc"># 仅对超过4字的纯中文拆滑动窗口（含英文字母的词保持整体匹配/span>
+
+    <span class="ck">if</span> len(w) > <span class="cn">4</span> <span class="ck">and not</span> re.search(<span class="cs">r'[a-zA-Z]'</span>, w):
+
+        <span class="ck">for</span> i <span class="ck">in</span> range(len(w) - <span class="cn">1</span>):
+
+            <span class="ck">for</span> j <span class="ck">in</span> [<span class="cn">2</span>, <span class="cn">3</span>]:
+
+                <span class="ck">if</span> i + j <= len(w):
+
+                    kw = w[i:i+j]
+
+                    <span class="ck">if</span> kw <span class="ck">not in</span> keywords:
+
+                        keywords.append(kw)
+
+
+
+<span class="cc"># 搜索字段新增 proposer（共5个字段）</span>
+
+conditions.append(<span class="cs">"(question LIKE %s OR solution LIKE %s OR remark LIKE %s OR submitter LIKE %s OR proposer LIKE %s)"</span>)
+
+params.extend([<span class="cs">f"%{esc}%"</span>] * <span class="cn">5</span>)</pre>
+
+
+
+        <h3>5.3 提出人（proposer）字段处/h3>
+
+        <pre><span class="cc"># 新增知识时（blueprints/knowledge.py add()）：</span>
+
+proposer = data.get(<span class="cs">"proposer"</span>, <span class="cs">""</span>).strip()   <span class="cc"># 前端表单「提出人」输入框，手动或AI自动填写</span>
+
+creator = g.user[<span class="cs">"username"</span>]              <span class="cc"># submitter 自动为当前登录账/span>
+
+conn.execute(
+
+    <span class="cs">"INSERT INTO operation_records (category, submitter, question, solution, remark, record_time, proposer) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id"</span>,
+
+    (category, creator, question, solution, remark, now, proposer)
+
+)
+
+op_log(<span class="cs">f"新增知识「{question[:20]}」→ {category}（ID={new_id}</span>)
+
+
+
+<span class="cc"># AI解析返回字段改为 proposer（blueprints/ai.py ai_parse()）：</span>
+
+<span class="cc"># system_prompt 提取字段：knowledge_category / creator / title / content</span>
+
+<span class="cc"># 返回creator 映射proposer 字段/span>
+
+<span class="ck">return</span> jsonify({
+
+    <span class="cs">"status"</span>: <span class="cs">"success"</span>,
+
+    <span class="cs">"data"</span>: {
+
+        <span class="cs">"category"</span>: category,
+
+        <span class="cs">"proposer"</span>: creator,   <span class="cc"># AI识别的提出人（报障人/申请人等/span>
+
+        <span class="cs">"question"</span>: title,
+
+        <span class="cs">"solution"</span>: content
+
+    }
+
+})</pre>
+
+
+
+        <h3>5.4 角色管理接口（blueprints/role.py/h3>
+
+        <pre><span class="cc"># 新增角色（POST /api/roles/add/span>
+
+@role_bp.route(<span class="cs">'/api/roles/add'</span>, methods=[<span class="cs">'POST'</span>])
+
+@login_required
+
+@require_permission(<span class="cs">"user.manage"</span>)
+
+<span class="ck">def</span> <span class="cf">add_role</span>():
+
+    name = data.get(<span class="cs">"name"</span>, <span class="cs">""</span>).strip()
+
+    permissions = data.get(<span class="cs">"permissions"</span>, [])   <span class="cc"># 权限码数/span>
+
+    <span class="cc"># 检索查重INSERT INTO roles ... 获取id INSERT INTO role_permissions ...</span>
+
+
+
+<span class="cc"># 修改用户角色（POST /user/role/span>
+
+@auth_bp.route(<span class="cs">'/user/role'</span>, methods=[<span class="cs">'POST'</span>])
+
+@login_required
+
+@require_permission(<span class="cs">"user.manage"</span>)
+
+<span class="ck">def</span> <span class="cf">user_role</span>():
+
+    role_id = data.get(<span class="cs">"role_id"</span>)
+
+    <span class="cc"># UPDATE users SET role=?, role_id=? WHERE username=?</span>
+
+    <span class="cc"># DELETE FROM user_tokens WHERE username=?  踢下线，强制重新登录</span></pre>
+
+
+
+        <h3>5.5 AI智能录入 JSON 截断自动修复</h3>
+
+        <pre><span class="cc"># blueprints/ai.py ai_parse() 三级修复策略</span>
+
+<span class="ck">try</span>:
+
+    parsed = json.loads(ai_text)              <span class="cc"># 级：直接解析</span>
+
+<span class="ck">except</span> json.JSONDecodeError:
+
+    <span class="cc"># 级：补全末尾引号和花括号</span>
+
+    fixed = ai_text.rstrip()
+
+    <span class="ck">if</span> fixed.count(<span class="cs">'"'</span>) % <span class="cn">2</span> != <span class="cn">0</span>:
+
+        fixed += <span class="cs">'"'</span>
+
+    open_b = fixed.count(<span class="cs">'{'</span>)
+
+    close_b = fixed.count(<span class="cs">'}'</span>)
+
+    fixed += <span class="cs">"}"</span> * (open_b - close_b)
+
+    <span class="ck">try</span>:
+
+        parsed = json.loads(fixed)
+
+        op_log(<span class="cs">f"AI返回JSON截断已自动修复，补全了{open_b-close_b}个花括号"</span>)
+
+    <span class="ck">except</span> json.JSONDecodeError:
+
+        <span class="cc"># 级：正则提取完整JSON/span>
+
+        m = re.search(<span class="cs">r'\{.*\}'</span>, ai_text, re.DOTALL)
+
+        <span class="ck">if</span> m:
+
+            parsed = json.loads(m.group())   <span class="cc"># 失败则抛出异常提示用户重/span></pre>
+
+
+
+        <h3>5.6 数据库备份（pg_dump/h3>
+
+        <pre><span class="cc"># blueprints/db.py auto_backup_database()</span>
+
+<span class="cc"># 触发条件edit（编辑）/ /del（软删除 /delete_permanent（永久删除）</span>
+
+env = os.environ.copy()
+
+env[<span class="cs">"PGPASSWORD"</span>] = DB_CONFIG[<span class="cs">"password"</span>]
+
+result = subprocess.run(
+
+    [<span class="cs">PG_DUMP</span>, <span class="cs">"-U"</span>, DB_CONFIG[<span class="cs">"user"</span>],
+
+     <span class="cs">"-h"</span>, DB_CONFIG[<span class="cs">"host"</span>], <span class="cs">"-p"</span>, str(DB_CONFIG[<span class="cs">"port"</span>]),
+
+     <span class="cs">"-d"</span>, DB_CONFIG[<span class="cs">"dbname"</span>],
+
+     <span class="cs">"-f"</span>, backup_file, <span class="cs">"--no-owner"</span>, <span class="cs">"--encoding=utf-8"</span>],
+
+    env=env, capture_output=<span class="ck">True</span>, timeout=<span class="cn">30</span>
+
+)
+
+<span class="cc"># 文件命名：自动备份_YYYYMMDD_HHMMSS.sql，最多保MAX_BACKUP_NUM=10 /span></pre>
+
+    </div>
+
+
+
+    <!-- ==================== 6. 前端交互逻辑 ==================== -->
+
+    <div class="card">
+
+        <h2>6. 前端交互逻辑（index.html/h2>
+
+
+
+        <h3>6.1 RBAC 权限控制（登录返permissions 数组/h3>
+
+        <pre><span class="cc">// 登录成功后，后端返回 permissions 数组（权限码列表/span>
+
+<span class="cc">// 前端缓存 userPermissions，根据权限码控制按钮显隐</span>
+
+let userPermissions = [];
+
+
+
+<span class="ck">async function</span> <span class="cf">checkLogin</span>() {
+
+    let token = getToken();
+
+    let res = <span class="ck">await</span> fetch(<span class="cs">"/api/permissions/me"</span>, { headers: getHeaders() });
+
+    let data = <span class="ck">await</span> res.json();
+
+    userPermissions = data.permissions || [];
+
+    <span class="cc">// 按权限码控制 UI 元素/span>
+
+    <span class="ck">if</span> (userPermissions.includes(<span class="cs">"user.manage"</span>)) {
+
+        showAccountMgr();
+
+        showRoleMgr();   <span class="cc">// 角色管理按钮（V07.5.12/span>
+
+    }
+
+    <span class="ck">if</span> (userPermissions.includes(<span class="cs">"ai.manage"</span>)) showAiConfigBtn();
+
+    <span class="ck">if</span> (!userPermissions.includes(<span class="cs">"knowledge.add"</span>)) disableAddForm();
+
+    <span class="ck">if</span> (!userPermissions.includes(<span class="cs">"knowledge.delete"</span>)) greyDeleteBtns();
+
+}
+
+
+
+<span class="ck">function</span> <span class="cf">hasPermission</span>(code) {
+
+    <span class="ck">return</span> userPermissions.includes(code);
+
+}</pre>
+
+
+
+        <h3>6.2 提出人字段（新增/编辑表单/h3>
+
+        <pre><span class="cc">// 新增知识表单新增「提出人」输入框</span>
+
+&lt;input id=<span class="cs">"newProposer"</span> type=<span class="cs">"text"</span> placeholder=<span class="cs">"提出人（报障申请人，选填</span>&gt;
+
+
+
+<span class="cc">// 保存时携proposer 字段</span>
+
+<span class="ck">async function</span> <span class="cf">saveRecord</span>() {
+
+    let proposer = document.getElementById(<span class="cs">"newProposer"</span>).value.trim();
+
+    let res = <span class="ck">await</span> fetch(<span class="cs">"/add"</span>, {
+
+        method: <span class="cs">"POST"</span>,
+
+        headers: getHeaders(),
+
+        body: JSON.stringify({ cate, proposer, question, solution, remark })
+
+    });
+
+    ...
+
+}
+
+
+
+<span class="cc">// AI解析回填也包含提出人</span>
+
+document.getElementById(<span class="cs">"newProposer"</span>).value = data.data.proposer;</pre>
+
+
+
+        <h3>6.3 角色管理面板（V07.5.12 新增/h3>
+
+        <pre><span class="cc">// 获取角色列表（GET /api/roles/span>
+
+<span class="ck">async function</span> <span class="cf">loadRoles</span>() {
+
+    let res = <span class="ck">await</span> fetch(<span class="cs">"/api/roles"</span>, { headers: getHeaders() });
+
+    let data = <span class="ck">await</span> res.json();
+
+    renderRoleList(data.data);  <span class="cc">// 展示角色名称/描述/权限用户/span>
+
+}
+
+
+
+<span class="cc">// 新增角色（POST /api/roles/add/span>
+
+<span class="ck">async function</span> <span class="cf">addRole</span>() {
+
+    let name = document.getElementById(<span class="cs">"roleName"</span>).value.trim();
+
+    let description = document.getElementById(<span class="cs">"roleDesc"</span>).value.trim();
+
+    let permissions = getCheckedPermissions();   <span class="cc">// 勾的权限码数/span>
+
+    <span class="ck">await</span> fetch(<span class="cs">"/api/roles/add"</span>, {
+
+        method: <span class="cs">"POST"</span>, headers: getHeaders(),
+
+        body: JSON.stringify({ name, description, permissions })
+
+    });
+
+    loadRoles();   <span class="cc">// 刷新列表</span>
+
+}
+
+
+
+<span class="cc">// 获取全部权限定义（GET /api/permissions），group_name 分组展示勾框</span></pre>
+
+
+
+        <h3>6.4 搜索结果展示（含提出人）</h3>
+
+        <pre><span class="cc">// renderList() 渲染搜索结果卡片（新增提出人展示/span>
+
+<span class="ck">function</span> <span class="cf">renderList</span>(records) {
+
+    records.forEach(item => {
+
+        let proposerHtml = item.proposer
+
+            ? <span class="cs">`&lt;span class="proposer-tag"&gt;📋 提出人：${item.proposer}&lt;/span&gt;`</span>
+
+            : <span class="cs">''</span>;
+
+        let card = <span class="cs">`
+
+            &lt;div class="item-card"&gt;
+
+                &lt;div class="item-meta"&gt;
+
+                    ${proposerHtml}
+
+                    &lt;span class="submitter-tag"&gt;👤 记录人：${item.submitter}&lt;/span&gt;
+
+                &lt;/div&gt;
+
+                ...
+
+            &lt;/div&gt;
+
+        `</span>;
+
+    });
+
+}</pre>
+
+    </div>
+
+
+
+    <!-- ==================== 7. AI集成配置 ==================== -->
+
+    <div class="card">
+
+        <h2>7. AI集成配置</h2>
+
+
+
+        <h3>V07.5.12 vs V07.5.10 AI配置变化</h3>
+
+        <div class="diff-add">
+
+            <strong>V07.5.10 增AI配置版：</strong>AI配置<code>sys_config</code> 键表code>@super_admin_required</code> 装饰器（检索username=admin）控制访问br>
+
+            <strong>V07.5.12 架构升级版：</strong>同样<code>sys_config</code> 键表，改<code>@require_permission("ai.manage")</code> 装饰器控制访问，默认 admin 角色拥有 ai.manage 权限。理论上可将 ai.manage 权限授予任意自定义角色
+
+        </div>
+
+
+
+        <h3>全局常量（db.py 顶部，默认用于首次初始化 INSERT OR IGNORE，均可过环境变量覆盖/h3>
+
+        <pre><span class="cc"># 数据库连接配置（优先从环境变量读取，兼容默认值）</span>
+
+<span class="cc"># KB_DB_HOST / KB_DB_PORT / KB_DB_USER / KB_DB_PASSWORD / KB_DB_NAME</span>
+
+DB_CONFIG = {
+
+    <span class="cs">'host'</span>: os.environ.get(<span class="cs">'KB_DB_HOST'</span>, <span class="cs">'localhost'</span>),
+
+    <span class="cs">'port'</span>: int(os.environ.get(<span class="cs">'KB_DB_PORT'</span>, <span class="cs">'5432'</span>)),
+
+    <span class="cs">'user'</span>: os.environ.get(<span class="cs">'KB_DB_USER'</span>, <span class="cs">'postgres'</span>),
+
+    <span class="cs">'password'</span>: os.environ.get(<span class="cs">'KB_DB_PASSWORD'</span>, <span class="cs">'123456'</span>),
+
+    <span class="cs">'dbname'</span>: os.environ.get(<span class="cs">'KB_DB_NAME'</span>, <span class="cs">'knowledge_base'</span>)
+
+    <span class="cs">'dbname'</span>: <span class="cs">'knowledge_base'</span>
+
+}
+
+<span class="cc"># AI配置sys_config 表读取，无默认常量（霢管理员在前端配置/span></pre>
+
+
+
+        <h3>AI调用公共参数（从 sys_config 键表读取/h3>
+
+        <table>
+
+            <tr><th>参数</th><th>AI录入（ai_parse/th><th>语义搜索（semantic_search/th></tr>
+
+            <tr><td>url</td><td>sys_config[ai_api_url]</td><td>sys_config[ai_api_url]</td></tr>
+
+            <tr><td>key</td><td>sys_config[ai_api_key]（明文）</td><td>sys_config[ai_api_key]（明文）</td></tr>
+
+            <tr><td>model</td><td>sys_config[ai_model]</td><td>sys_config[ai_model]</td></tr>
+
+            <tr><td>temperature</td><td>0.1（固定）</td><td>0.1（固定）</td></tr>
+
+            <tr><td>max_tokens</td><td>4096（V07.5.12 024升至4096，降低截断概率）</td><td>1024</td></tr>
+
+            <tr><td>timeout</td><td>60s</td><td>15s</td></tr>
+
+        </table>
+
+        <div class="note">⚠️ sys_config[ai_api_key] 为空字符串时，AI功能自动降级：AI录入接口返回"请联系管理员配置API Key"；语义搜索仍执行关键词召加权排序，但 answer 字段返回空字符串/div>
+
+    </div>
+
+
+
+    <!-- ==================== 8. 版本对比与升级要==================== -->
+
+    <div class="card">
+
+        <h2>8. 版本对比与升级要/h2>
+
+        <table>
+
+            <tr><th>对比/th><th>V07.5.10 增AI配置/th><th>V07.5.12 架构升级版（当前/th></tr>
+
+            <tr><td>数据库引/td><td>SQLite 3（文件型/td><td>PostgreSQL 14+（服务型，localhost:5432/td></tr>
+
+            <tr><td>SQL 占位/td><td><code>?</code></td><td><code>%s</code></td></tr>
+
+            <tr><td>自增主键</td><td>INTEGER AUTOINCREMENT</td><td>SERIAL PRIMARY KEY</td></tr>
+
+            <tr><td>唯一冲突</td><td>INSERT OR IGNORE / INSERT OR REPLACE</td><td>ON CONFLICT DO NOTHING / ON CONFLICT DO UPDATE</td></tr>
+
+            <tr><td>代码结构</td><td>单文app.py（约2000行）</td><td>蓝图架构（app.py入口 + 7个blueprint模块/td></tr>
+
+            <tr><td>权限校验</td><td>if g.user["role"] == "admin" 硬判/td><td>@require_permission("code") 装饰+ role_permissions /td></tr>
+
+            <tr><td>角色管理</td><td>无（角色写死3个）</td><td>RBAC：roles表，支持自定义角色，前端管理界面</td></tr>
+
+            <tr><td>提出人字/td><td>无（submitter=创建人）</td><td>新增 proposer 字段，与 submitter 分离</td></tr>
+
+            <tr><td>搜索排序</td><td>ID倒序（最新优先）</td><td>difflib 加权评分（标.6+内容0.4），相关度排/td></tr>
+
+            <tr><td>搜索字段</td><td>question/solution/remark/submitter个）</td><td>question/solution/remark/submitter/proposer个）</td></tr>
+
+            <tr><td>数据库备/td><td>shutil.copyfiledb文件/td><td>pg_dump 导出 .sql 文件-no-owner/td></tr>
+
+            <tr><td>AI max_tokens</td><td>1024（易截断/td><td>4096（ai_parse），JSON截断自动修复</td></tr>
+
+            <tr><td>AI测试连接</td><td>仅抛异常提示</td><td>非JSON返回时也捕获并展示前200字符预览，更友好的错误提/td></tr>
+
+            <tr><td>登录返回</td><td>token + username + role</td><td>token + username + role + role_id + permissions数组</td></tr>
+
+        </table>
+
+
+
+        <h3>升级注意事项</h3>
+
+        <ul>
+
+            <li>1. <strong>PostgreSQL 环境必须提前准备/strong>，db.py DB_CONFIG 支持通过环境变量配置（KB_DB_HOST / KB_DB_PORT / KB_DB_USER / KB_DB_PASSWORD / KB_DB_NAME），默认host=localhost, user=postgres, password=123456, dbname=knowledge_base</li>
+
+            <li>2. <strong>pg_dump 路径</strong>：默<code>D:\PostgreSQL\bin\pg_dump.exe</code>，可通过环境变量 <code>KB_PG_BIN</code> 覆盖，如 PostgreSQL 安装路径不同请设置该变量</li>
+
+            <li>3. <strong>SQLite 数据迁移</strong>：过 DBManager.exe 导出 Excel 新版启动后在 DBManager 中批量导入，或编写迁移脚/li>
+
+            <li>4. <strong>蓝图目录必须完整部署</strong>：blueprints/ 目录app.py 同级，缺少任何一.py 文件都会导致服务无法启动</li>
+
+            <li>5. <strong>历史数据兼容</strong>：proposer 字段 ALTER TABLE ADD COLUMN 幂等安全，历史记proposer 默认为空字符串，不影响展/li>
+
+            <li>6. <strong>旧用户角色自动迁/strong>：启动时 init_rbac() 自动role_id=NULL 的旧用户role 字段匹配系统角色</li>
+
+        </ul>
+
+    </div>
+
+
+
+    <div class="footer">
+
+        红枫 · 智行知识库 · V07.5.12 智能款·增AI配置·架构升级具体方案 · 2026年5月24日
+
+    </div>
+
+</div>
+
+
+
+<!-- ==================== V07.5.12 后续优化 ==================== -->
+
+<div class="card">
+
+    <h2>🧰 V07.5.12 后续优化（2026.05.22-23）.22-23/h2>
+
+    <p><strong>主要新增功能/strong></p>
+
+    <ul>
+
+        <li><strong>数据管理集成到主/strong>：顶部栏新增按钮，弹出面板集成导导入/清空/备份/恢复/建表/ID流水号重置，替代独立 /tools 页面</li>
+
+        <li><strong>AI 辅助编辑</strong>：编辑弹窗新增✨ AI优化」按钮，AI自动优化内容措辞</li>
+
+        <li>🎨 <strong>顶部栏重/strong>：管理类按钮收进「··更多 ▼下拉菜单，统一图标，⏼电源逢/li>
+
+        <li>📂 <strong>分类体系调整</strong>8个→10个用分类，移除默认分/li>
+
+        <li>📊 <strong>仪表盘改/strong>卡片布局统计+分类环形朢新动态），渐变色背景，支持拖拽换/li>
+
+        <li>📋 <strong>朢新动态优/strong>：白名单过滤17类业务事件，知识CRUD日志含标分类，每条动态带动作类型图标和颜色，过滤AI调试/备份运维等技术日/li>
+
+        <li>🔒 <strong>数据权限功能</strong>：按创建人隔离知识记录，sys_config弢关，user_data_permissions授权表，build_data_perm_where()统一过滤</li>
+
+        <li>📋 <strong>操作日志可视/strong>：数据管理弹窗集成日志面板，分页/搜索/级别过滤</li>
+
+        <li>🚀 <strong>启动器优/strong>：双黑窗→单窗口模式，atexit注册清理函数</li>
+        <li>🎨 <strong>换肤系统</strong>：设置面板新增12种可选主题（原始图片/彩虹渐变/三色呼吸/粒子渐变/深空星夜/极光漫射/深海气泡/霓虹网格/日落渐变/浅色气泡/矩阵代码雨/海洋波浪），选择后立即生效并保存到本地存储</li>
+        <li>📱 <strong>移动端侧边栏</strong>：新增用户侧边栏导航（点击头像👤触发），展示用户头像/姓名/角色，包含全部功能入口和退出按钮</li>
+        <li>⚙️ <strong>设置面板改版</strong>：可拖拽移动，采用手风琴（Accordion）折叠布局（查重设置/AI配置/数据权限/换肤系统四个分区），支持自由展开折叠</li>
+
+    </ul>
+
+    <p><strong>安全与能/strong></p>
+
+    <ul>
+
+        <li>修复上传文件XSS 漏洞、数据库事务中止 Bug、SQL注入风险</li>
+
+        <li>数据权限60秒缓存分类增量同步pg_trgm索引</li>
+
+        <li>PG工具路径环境变量化shell=True→列表传/li>
+
+        <li>备份列表可删除默认折/li>
+
+    </ul>
+
+
+
+    <h3>仪表API 详解 <span class="tag-api">GET /api/dashboard</span></h3>
+
+    <table>
+
+        <tr><th>返回字段</th><th>类型</th><th>说明</th></tr>
+
+        <tr><td>categories</td><td>Array</td><td>分类分布数据 [{name, count}]，按数量降序，最"其他"聚合</td></tr>
+
+        <tr><td>trend</td><td>Array</td><td>7天新增趋[{date, count}]，日期格YYYY-MM-DD</td></tr>
+
+        <tr><td>recent</td><td>Array</td><td>朢条业务动[{time, user, content, action_type, action_icon, action_color}]，白名单过滤</td></tr>
+
+        <tr><td>star_count</td><td>Integer</td><td>星标记录总数</td></tr>
+
+    </table>
+
+    <div class="note">⚠️ 扢有查询均受数据权限约束（build_data_perm_where），admin/超管豁免。recent字段从server.log解析，仅保留17类业务事件（新增/编辑/删除/恢复/登录/导入/角色变更等），过滤AI调试和系统运维日志/div>
+
+
+
+    <h3>朢新动态动作类型映/h3>
+
+    <table>
+
+        <tr><th>动作类型</th><th>图标</th><th>颜色</th><th>匹配关键/th></tr>
+
+        <tr><td>新增知识</td><td>+</td><td style="color:#0fc6c2;">青色</td><td>新增知识</td></tr>
+
+        <tr><td>编辑知识</td><td>~</td><td style="color:#165DFF;">蓝色</td><td>编辑知识</td></tr>
+
+        <tr><td>移入回收/td><td>×</td><td style="color:#e24b4a;">红色</td><td>移入回收/td></tr>
+
+        <tr><td>永久删除</td><td>×</td><td style="color:#e24b4a;">红色</td><td>永久删除</td></tr>
+
+        <tr><td>恢复记录</td><td>/td><td style="color:#0fc6c2;">青色</td><td>恢复记录</td></tr>
+
+        <tr><td>批量导入</td><td>/td><td style="color:#9f7aea;">紫色</td><td>批量导入</td></tr>
+
+        <tr><td>清空记录</td><td>!</td><td style="color:#f9ab00;">黄色</td><td>清空扢有知/td></tr>
+
+        <tr><td>登录</td><td>/td><td style="color:#165DFF;">蓝色</td><td>用户登录</td></tr>
+
+        <tr><td>登出</td><td>/td><td style="color:#86909c;">灰色</td><td>用户登出</td></tr>
+
+        <tr><td>备份恢复</td><td>/td><td style="color:#f9ab00;">黄色</td><td>从备份恢/td></tr>
+
+        <tr><td>角色变更</td><td>/td><td style="color:#9f7aea;">紫色</td><td>新增/更新/删除角色、修改用/td></tr>
+
+        <tr><td>配置变更</td><td>/td><td style="color:#86909c;">灰色</td><td>分类配置、数据权/td></tr>
+
+        <tr><td>AI解析</td><td>/td><td style="color:#9f7aea;">紫色</td><td>AI解析成功</td></tr>
+
+    </table>
+
+
+
+    <h3>数据权限过滤机制</h3>
+
+    <pre><span class="cc"># blueprints/db.py build_data_perm_where()</span>
+
+<span class="cc"># 统一封装，所有知识查询均经此过滤</span>
+
+<span class="ck">def</span> <span class="cf">build_data_perm_where</span>(conn, username, base_where, params):
+
+    <span class="cc"># 1. admin is_super=1 roles.name='admin' 豁免，返回原条件</span>
+
+    <span class="cc"># 2. sys_config data_permission_enabled 未开启则返回原条/span>
+
+    <span class="cc"># 3. user_data_permissions 获取该用户被授权查看的创建人列表</span>
+
+    <span class="cc"># 4. 拼接 submitter IN (自己 + 被授权用 条件</span>
+
+    <span class="ck">return</span> new_where, new_params</pre>
+
+</div>
+
+</body>
+
+</html>
+
+
+
+
+
+
+
